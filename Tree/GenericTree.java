@@ -3,7 +3,6 @@ package Tree;
 /* Generic tree construction */
 
 import java.util.*;
-import java.io.*;
 
 public class GenericTree
 {
