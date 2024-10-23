@@ -1281,3 +1281,142 @@ public class KthSmallestInBST {
     }
 }
 ```
+
+# top view and bottom view of a binary tree
+To find the **top view** and **bottom view** of a binary tree, we need to consider the nodes visible when the tree is viewed from the top or bottom, respectively. The **vertical distance (HD - horizontal distance)** concept is useful here. We assign horizontal distances (HD) to nodes, where the root node is at HD = 0, the left child decreases HD by 1, and the right child increases HD by 1. We can use **Breadth-First Search (BFS)** with a queue to traverse the tree level by level and a map to store nodes for each horizontal distance.
+
+### Top View of a Binary Tree:
+For the **top view**, we want to store the first node encountered at each horizontal distance when traversing level by level (BFS).
+
+### Bottom View of a Binary Tree:
+For the **bottom view**, we store the last node encountered at each horizontal distance, i.e., the node seen last at each level.
+
+### Top View Code:
+```java
+import java.util.*;
+
+class Solution {
+    class Pair {
+        TreeNode node;
+        int hd; // horizontal distance
+        public Pair(TreeNode node, int hd) {
+            this.node = node;
+            this.hd = hd;
+        }
+    }
+    
+    public List<Integer> topView(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+        
+        // Map to store first node at each horizontal distance
+        Map<Integer, Integer> topViewMap = new TreeMap<>();
+        Queue<Pair> queue = new LinkedList<>();
+        
+        queue.add(new Pair(root, 0));
+        
+        while (!queue.isEmpty()) {
+            Pair current = queue.poll();
+            TreeNode node = current.node;
+            int hd = current.hd;
+            
+            // If no node is recorded for this horizontal distance, store it
+            if (!topViewMap.containsKey(hd)) {
+                topViewMap.put(hd, node.val);
+            }
+            
+            // Add the left and right children to the queue with updated HDs
+            if (node.left != null) {
+                queue.add(new Pair(node.left, hd - 1));
+            }
+            if (node.right != null) {
+                queue.add(new Pair(node.right, hd + 1));
+            }
+        }
+        
+        // Add values from the map to the result list
+        for (Map.Entry<Integer, Integer> entry : topViewMap.entrySet()) {
+            result.add(entry.getValue());
+        }
+        
+        return result;
+    }
+}
+```
+
+### Bottom View Code:
+```java
+import java.util.*;
+
+class Solution {
+    class Pair {
+        TreeNode node;
+        int hd; // horizontal distance
+        public Pair(TreeNode node, int hd) {
+            this.node = node;
+            this.hd = hd;
+        }
+    }
+    
+    public List<Integer> bottomView(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+        
+        // Map to store last node at each horizontal distance
+        Map<Integer, Integer> bottomViewMap = new TreeMap<>();
+        Queue<Pair> queue = new LinkedList<>();
+        
+        queue.add(new Pair(root, 0));
+        
+        while (!queue.isEmpty()) {
+            Pair current = queue.poll();
+            TreeNode node = current.node;
+            int hd = current.hd;
+            
+            // Update the map to store the last node for this horizontal distance
+            bottomViewMap.put(hd, node.val);
+            
+            // Add the left and right children to the queue with updated HDs
+            if (node.left != null) {
+                queue.add(new Pair(node.left, hd - 1));
+            }
+            if (node.right != null) {
+                queue.add(new Pair(node.right, hd + 1));
+            }
+        }
+        
+        // Add values from the map to the result list
+        for (Map.Entry<Integer, Integer> entry : bottomViewMap.entrySet()) {
+            result.add(entry.getValue());
+        }
+        
+        return result;
+    }
+}
+```
+
+### Explanation:
+1. **Pair Class**: Each node is paired with its horizontal distance (HD) and added to a queue.
+2. **BFS Traversal**: BFS is used to traverse the tree level by level, ensuring that nodes are processed in a top-to-bottom fashion.
+3. **Top View Logic**: For the top view, we store the first node we encounter at each horizontal distance using a `TreeMap` (sorted by HD).
+4. **Bottom View Logic**: For the bottom view, we keep updating the node for each horizontal distance, so the last node encountered remains in the map.
+5. **TreeMap**: The map is used to store the nodes at each horizontal distance, and since it's a `TreeMap`, it automatically sorts by horizontal distance.
+
+### Example Tree:
+```
+       3
+      / \
+     1   4
+    /   / \
+   6   1   5
+```
+
+For this tree:
+- **Top view**: `6 1 3 4 5`
+- **Bottom view**: `6 1 1 4 5`
+
+### Time and Space Complexity:
+- **Time Complexity**: O(n) where `n` is the number of nodes, because each node is visited once.
+- **Space Complexity**: O(n), the space required for the queue and the map used to store horizontal distances.
+
+
