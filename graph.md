@@ -197,7 +197,8 @@ class Solution {
     }
 }
 ```
-# Bipartite Graph | DFS Implementation
+# Bipartite Graph 
+
 Problem Statement: Given an adjacency list of a graph adj of V no. of vertices having 0 based index. Check whether the graph is bipartite or not.
 
 If we are able to colour a graph with two colours such that no adjacent nodes have the same colour, it is called a bipartite graph.
@@ -214,7 +215,7 @@ Output:  1
 
 
 ![image](https://github.com/soulnote/LeetCode/assets/71943647/8c9ea550-9f4e-41cc-aff3-b790f7e9b433)
-
+## DFS Implementation
 ```java
 import java.util.*;
 
@@ -277,6 +278,76 @@ class Solution
 
 }
 ```
+## bfs implimentation
+```java
+import java.util.*;
+
+public class BipartiteGraphAdjList {
+
+    // Function to check if the graph is bipartite using BFS
+    public static boolean isBipartite(List<List<Integer>> adjList, int vertices) {
+        // Array to store colors of vertices: -1 means uncolored
+        int[] colors = new int[vertices];
+        Arrays.fill(colors, -1);
+
+        // Iterate over all vertices to handle disconnected graphs
+        for (int i = 0; i < vertices; i++) {
+            if (colors[i] == -1) { // If the vertex is not yet colored
+                if (!bfsCheck(adjList, i, colors)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static boolean bfsCheck(List<List<Integer>> adjList, int start, int[] colors) {
+        Queue<Integer> queue = new LinkedList<>();
+        queue.add(start);
+        colors[start] = 0; // Start coloring the first node as 0
+
+        while (!queue.isEmpty()) {
+            int node = queue.poll();
+            for (int neighbor : adjList.get(node)) {
+                if (colors[neighbor] == -1) { // If uncolored, assign alternate color
+                    colors[neighbor] = 1 - colors[node];
+                    queue.add(neighbor);
+                } else if (colors[neighbor] == colors[node]) {
+                    // If neighbor has the same color, it's not bipartite
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static void main(String[] args) {
+        int vertices = 4;
+        // Adjacency list representation of the graph
+        List<List<Integer>> adjList = new ArrayList<>();
+        for (int i = 0; i < vertices; i++) {
+            adjList.add(new ArrayList<>());
+        }
+
+        // Adding edges
+        adjList.get(0).add(1);
+        adjList.get(0).add(3);
+        adjList.get(1).add(0);
+        adjList.get(1).add(2);
+        adjList.get(2).add(1);
+        adjList.get(2).add(3);
+        adjList.get(3).add(0);
+        adjList.get(3).add(2);
+
+        if (isBipartite(adjList, vertices)) {
+            System.out.println("The graph is bipartite.");
+        } else {
+            System.out.println("The graph is not bipartite.");
+        }
+    }
+}
+```
+
 # Topological Sort Algorithm | DFS
 Problem Statement: Given a Directed Acyclic Graph (DAG) with V vertices and E edges, Find any Topological Sorting of that Graph.
 
