@@ -1617,5 +1617,158 @@ Explanation: Three strongly connected components are marked below:
 
 ![image](https://github.com/soulnote/LeetCode/assets/71943647/5427953b-59c3-49f8-bb61-24c9f0d9951f)
 
+A **strongly connected component (SCC)** in a **directed graph** is a maximal subgraph in which:
 
-# 
+1. **Every vertex is reachable from every other vertex** in that subgraph.
+2. **Maximal** means that no additional vertices can be added to the subgraph while maintaining the property of strong connectivity.
+
+In simple terms, for every pair of vertices \(u\) and \(v\) in an SCC:
+- There exists a directed path from \(u\) to \(v\), and
+- There exists a directed path from \(v\) to \(u\).
+
+### Example:
+Consider the following directed graph:
+
+```
+0 → 1 → 2 → 0
+3 → 4
+```
+
+Here:
+1. The vertices **0, 1, 2** form an SCC because there are paths between every pair of these vertices in both directions.
+2. The vertex **3** forms its own SCC because there is no way to reach other vertices bidirectionally.
+3. The vertex **4** also forms its own SCC for the same reason.
+
+### Why are SCCs important?
+- **Applications in Graph Theory**: SCCs help in analyzing strongly connected substructures within a larger graph.
+- **Real-World Use Cases**:
+  - Dependency analysis in software modules.
+  - Finding cycles in directed graphs.
+  - Network analysis, such as identifying clusters or communities in social networks.
+
+### Kosaraju's Algorithm for Finding SCCs:
+The most common algorithm for finding SCCs (like the one shared above) includes:
+1. **DFS to determine the order of processing (finish times)**.
+2. **Reverse the graph**.
+3. **Perform DFS in the reverse graph in the order of the finish times** to find all SCCs.
+Here is the Java implementation to find the number of strongly connected components (SCCs) in a directed graph using **Kosaraju's algorithm**:
+
+### Explanation of Kosaraju's Algorithm:
+1. Perform a **DFS** on the original graph and store the vertices in a stack according to their finishing times.
+2. Reverse the graph (transpose the edges).
+3. Perform a **DFS** on the reversed graph, considering vertices in the order defined by the stack.
+4. Each DFS traversal in the reversed graph marks one SCC.
+
+### Java Implementation:
+
+```java
+import java.util.*;
+
+public class KosarajuAlgorithm {
+
+    // Function to find the number of strongly connected components
+    public static int findSCCs(int V, List<List<Integer>> adj) {
+        // Step 1: Perform DFS on the original graph and store vertices by finish time
+        Stack<Integer> stack = new Stack<>();
+        boolean[] visited = new boolean[V];
+        
+        for (int i = 0; i < V; i++) {
+            if (!visited[i]) {
+                dfsOriginal(i, adj, visited, stack);
+            }
+        }
+
+        // Step 2: Reverse the graph
+        List<List<Integer>> reversedGraph = reverseGraph(V, adj);
+
+        // Step 3: Perform DFS on the reversed graph using vertices in stack order
+        Arrays.fill(visited, false); // Reset the visited array
+        int sccCount = 0;
+
+        while (!stack.isEmpty()) {
+            int node = stack.pop();
+            if (!visited[node]) {
+                dfsReversed(node, reversedGraph, visited);
+                sccCount++; // Each DFS on the reversed graph identifies one SCC
+            }
+        }
+
+        return sccCount;
+    }
+
+    private static void dfsOriginal(int node, List<List<Integer>> adj, boolean[] visited, Stack<Integer> stack) {
+        visited[node] = true;
+        for (int neighbor : adj.get(node)) {
+            if (!visited[neighbor]) {
+                dfsOriginal(neighbor, adj, visited, stack);
+            }
+        }
+        stack.push(node); // Push to stack after all neighbors are visited
+    }
+
+    private static void dfsReversed(int node, List<List<Integer>> reversedGraph, boolean[] visited) {
+        visited[node] = true;
+        for (int neighbor : reversedGraph.get(node)) {
+            if (!visited[neighbor]) {
+                dfsReversed(neighbor, reversedGraph, visited);
+            }
+        }
+    }
+
+    private static List<List<Integer>> reverseGraph(int V, List<List<Integer>> adj) {
+        List<List<Integer>> reversedGraph = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            reversedGraph.add(new ArrayList<>());
+        }
+
+        for (int i = 0; i < V; i++) {
+            for (int neighbor : adj.get(i)) {
+                reversedGraph.get(neighbor).add(i); // Reverse the edge
+            }
+        }
+
+        return reversedGraph;
+    }
+
+    public static void main(String[] args) {
+        int V = 5; // Number of vertices
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+
+        // Adding edges
+        adj.get(0).add(2);
+        adj.get(2).add(1);
+        adj.get(1).add(0);
+        adj.get(0).add(3);
+        adj.get(3).add(4);
+
+        // Find and print the number of SCCs
+        System.out.println("The number of strongly connected components is: " + findSCCs(V, adj));
+    }
+}
+```
+
+### Input:
+The graph is represented as an adjacency list.  
+Vertices: `0, 1, 2, 3, 4`  
+Edges:  
+- 0 → 2  
+- 2 → 1  
+- 1 → 0  
+- 0 → 3  
+- 3 → 4  
+
+### Output:
+```
+The number of strongly connected components is: 3
+```
+
+### Explanation:
+1. SCCs in this graph are:
+   - {0, 1, 2}  
+   - {3}  
+   - {4}  
+
+This implementation efficiently computes the SCCs in \(O(V + E)\) time complexity.
