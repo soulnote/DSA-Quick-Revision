@@ -344,6 +344,8 @@ class Solution {
 **Time Complexity:** O(N + 2E) + O(N), Where N = Nodes, 2E is for total degrees as we traverse all adjacent nodes. In the case of connected components of a graph, it will take another O(N) time.
 
 **Space Complexity:** O(N) + O(N) ~ O(N), Space for recursive stack space and visited array.
+
+
 # Bipartite Graph 
 
 Problem Statement: Given an adjacency list of a graph adj of V no. of vertices having 0 based index. Check whether the graph is bipartite or not.
@@ -494,6 +496,86 @@ public class BipartiteGraphAdjList {
     }
 }
 ```
+---
+# Detect cycle in a directed graph (using DFS) 
+
+The intuition is to reach a previously visited node again on the same path. If it can be done, we conclude that the graph has a cycle.
+
+Note: If a directed graph contains a cycle, the node has to be visited again on the same path and not through different paths.
+![image](https://github.com/soulnote/All-images/blob/main/cycleindg.gif)
+```java
+import java.util.*;
+
+
+class Solution {
+    private boolean dfsCheck(int node, ArrayList<ArrayList<Integer>> adj, int vis[], int pathVis[]) {
+        vis[node] = 1; 
+        pathVis[node] = 1; 
+        
+        // traverse for adjacent nodes 
+        for(int it : adj.get(node)) {
+            // when the node is not visited 
+            if(vis[it] == 0) {
+                if(dfsCheck(it, adj, vis, pathVis) == true) 
+                    return true; 
+            }
+            // if the node has been previously visited
+            // but it has to be visited on the same path 
+            else if(pathVis[it] == 1) {
+                return true; 
+            }
+        }
+        
+        pathVis[node] = 0; 
+        return false; 
+    }
+
+    // Function to detect cycle in a directed graph.
+    public boolean isCyclic(int V, ArrayList<ArrayList<Integer>> adj) {
+        int vis[] = new int[V];
+        int pathVis[] = new int[V];
+        
+        for(int i = 0;i<V;i++) {
+            if(vis[i] == 0) {
+                if(dfsCheck(i, adj, vis, pathVis) == true) return true; 
+            }
+        }
+        return false; 
+    }
+}
+
+public class tUf {
+    public static void main(String[] args) {
+        int V = 11;
+        ArrayList<ArrayList<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+        adj.get(1).add(2);
+        adj.get(2).add(3);
+        adj.get(3).add(4);
+        adj.get(3).add(7);
+        adj.get(4).add(5);
+        adj.get(5).add(6);
+        adj.get(7).add(5);
+        adj.get(8).add(9);
+        adj.get(9).add(10);
+        adj.get(10).add(8);
+
+        Solution obj = new Solution();
+        boolean ans = obj.isCyclic(V, adj);
+        if (ans)
+            System.out.println("True");
+        else
+            System.out.println("False");
+
+    }
+}
+```
+**Time Complexity:** O(V+E)+O(V) , where V = no. of nodes and E = no. of edges. There can be at most V components. So, another O(V) time complexity.
+
+**Space Complexity:** O(2N) + O(N) ~ O(2N): O(2N) for two visited arrays and O(N) for recursive stack space.
+
 
 # Topological Sort Algorithm | DFS
 Problem Statement: Given a Directed Acyclic Graph (DAG) with V vertices and E edges, Find any Topological Sorting of that Graph.
@@ -669,6 +751,129 @@ public class tUf {
 }
 ```
 
+# Detect Cycle in a Directed Graph using BFS
+
+1. Use **Kahn’s Algorithm** to perform a BFS-based topological sort.
+2. Calculate the **in-degree** of all vertices.
+3. Add all vertices with **in-degree 0** to a queue.
+4. Process each node from the queue and reduce in-degrees of neighbors.
+5. If the total processed nodes are **less than V**, a **cycle exists**.
+
+```java
+// Java program to check if there is a cycle in 
+// directed graph using BFS.
+import java.io.*;
+import java.util.*;
+
+class GFG
+{
+
+    // Class to represent a graph
+    static class Graph
+    {
+        int V; // No. of vertices'
+
+        // Pointer to an array containing adjacency list
+        Vector<Integer>[] adj;
+
+        @SuppressWarnings("unchecked")
+        Graph(int V)
+        {
+            // Constructor
+            this.V = V;
+            this.adj = new Vector[V];
+            for (int i = 0; i < V; i++)
+                adj[i] = new Vector<>();
+        }
+
+        // function to add an edge to graph
+        void addEdge(int u, int v)
+        {
+            adj[u].add(v);
+        }
+
+        // Returns true if there is a cycle in the graph
+        // else false.
+
+        // This function returns true if there is a cycle
+        // in directed graph, else returns false.
+        boolean isCycle() 
+        {
+
+            // Create a vector to store indegrees of all
+            // vertices. Initialize all indegrees as 0.
+            int[] in_degree = new int[this.V];
+            Arrays.fill(in_degree, 0);
+
+            // Traverse adjacency lists to fill indegrees of
+            // vertices. This step takes O(V+E) time
+            for (int u = 0; u < V; u++)
+            {
+                for (int v : adj[u])
+                    in_degree[v]++;
+            }
+
+            // Create an queue and enqueue all vertices with
+            // indegree 0
+            Queue<Integer> q = new LinkedList<Integer>();
+            for (int i = 0; i < V; i++)
+                if (in_degree[i] == 0)
+                    q.add(i);
+
+            // Initialize count of visited vertices
+            int cnt = 0;
+
+            // Create a vector to store result (A topological
+            // ordering of the vertices)
+            Vector<Integer> top_order = new Vector<>();
+
+            // One by one dequeue vertices from queue and enqueue
+            // adjacents if indegree of adjacent becomes 0
+            while (!q.isEmpty())
+            {
+
+                // Extract front of queue (or perform dequeue)
+                // and add it to topological order
+                int u = q.poll();
+                top_order.add(u);
+
+                // Iterate through all its neighbouring nodes
+                // of dequeued node u and decrease their in-degree
+                // by 1
+                for (int itr : adj[u])
+                    if (--in_degree[itr] == 0)
+                        q.add(itr);
+                cnt++;
+            }
+
+            // Check if there was a cycle
+            if (cnt != this.V)
+                return true;
+            else
+                return false;
+        }
+    }
+
+    // Driver Code
+    public static void main(String[] args) 
+    {
+
+        // Create a graph given in the above diagram
+        Graph g = new Graph(6);
+        g.addEdge(0, 1);
+        g.addEdge(1, 2);
+        g.addEdge(2, 0);
+        g.addEdge(3, 4);
+        g.addEdge(4, 5);
+
+        if (g.isCycle())
+            System.out.println("Yes");
+        else
+            System.out.println("No");
+    }
+}
+
+```
 # Shortest Path in Undirected Graph with unit distance
 Given an Undirected Graph having unit weight, find the shortest path from the source to all other nodes in this graph. In this problem statement, we have assumed the source vertex to be ‘0’. If a vertex is unreachable from the source node, then return -1 for that vertex.
 
