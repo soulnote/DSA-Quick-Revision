@@ -1119,7 +1119,8 @@ We use a Set to keep track of nodes sorted by current shortest distance, always 
 When visiting a node’s neighbors, if we find a better (shorter) path, we update the distance and push the new pair into the set.
 The set ensures that we always deal with the most promising paths first and discard longer paths to the same node.
 This approach works only with positive weights, as negative weights can lead to incorrect updates.
-**Intution 2 using queue:** We find the shortest path from a source node to all others using a min-heap priority queue to always process the node with the smallest distance first.
+## **Intution 2 using queue:** 
+We find the shortest path from a source node to all others using a min-heap priority queue to always process the node with the smallest distance first.
 At each step, we pick the top node (lowest distance), then update its neighbors’ distances if a shorter path is found.
 The updated neighbors are pushed back into the queue, and this process continues until all nodes are processed.
 This way, we always prioritize the most optimal (shortest) paths.
