@@ -197,6 +197,153 @@ class Solution {
     }
 }
 ```
+# Detect Cycle in an Undirected Graph (using BFS)
+**Intution:-**
+ The intuition is that we start from a node, and start doing BFS level-wise, if somewhere down the line, we visit a single node twice, it means we came via two paths to end up at the same node. It implies there is a cycle in the graph because we know that we start from different directions but can arrive at the same node only if the graph is connected or contains a cycle, otherwise we would never come to the same node again.  
+ ![image](https://github.com/soulnote/All-images/blob/main/bfscycle1.png)
+ ![image](https://github.com/soulnote/All-images/blob/main/bfscycle2.png)
+ ```java
+import java.util.*;
+
+class Solution
+{
+   static boolean checkForCycle(ArrayList<ArrayList<Integer>> adj, int s,
+            boolean vis[], int parent[])
+    {
+       Queue<Node> q =  new LinkedList<>(); //BFS
+       q.add(new Node(s, -1));
+       vis[s] =true;
+       
+       // until the queue is empty
+       while(!q.isEmpty())
+       {
+           // source node and its parent node
+           int node = q.peek().first;
+           int par = q.peek().second;
+           q.remove(); 
+           
+           // go to all the adjacent nodes
+           for(Integer it: adj.get(node))
+           {
+               if(vis[it]==false)  
+               {
+                   q.add(new Node(it, node));
+                   vis[it] = true; 
+               }
+        
+                // if adjacent node is visited and is not its own parent node
+               else if(par != it) return true;
+           }
+       }
+       
+       return false;
+    }
+    
+    // function to detect cycle in an undirected graph
+    public boolean isCycle(int V, ArrayList<ArrayList<Integer>> adj)
+    {
+        boolean vis[] = new boolean[V];
+        Arrays.fill(vis,false);
+        int parent[] = new int[V];
+        Arrays.fill(parent,-1);  
+        
+        for(int i=0;i<V;i++)
+            if(vis[i]==false) 
+                if(checkForCycle(adj, i,vis, parent)) 
+                    return true;
+    
+        return false;
+    }
+    
+    public static void main(String[] args)
+    {
+        ArrayList<ArrayList<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            adj.add(new ArrayList < > ());
+        }
+        adj.get(1).add(2);
+        adj.get(2).add(1);
+        adj.get(2).add(3);
+        adj.get(3).add(2);
+                
+        Solution obj = new Solution();
+        boolean ans = obj.isCycle(4, adj);
+        if (ans)
+            System.out.println("1");    
+        else
+            System.out.println("0");
+    }
+}
+
+class Node {
+    int first;
+    int second;
+    public Node(int first, int second) {
+        this.first = first;
+        this.second = second; 
+    }
+}
+```
+**Time Complexity**: O(N + 2E) + O(N), Where N = Nodes, 2E is for total degrees as we traverse all adjacent nodes. In the case of connected components of a graph, it will take another O(N) time.
+
+**Space Complexity:** O(N) + O(N) ~ O(N), Space for queue data structure and visited array.
+
+# Detect Cycle in an Undirected Graph (using DFS)
+The intuition is that we start from a source and go in-depth, and reach any node that has been previously visited in the past; it means there's a cycle.
+NOTE: We can call it a cycle only if the already visited node is a non-parent node because we cannot say we came to a node that was previously the parent node. 
+![image](https://github.com/soulnote/All-images/blob/main/dfscycle1.png)
+![image](https://github.com/soulnote/All-images/blob/main/dfscycle2.png)
+
+```java
+import java.util.*;
+
+class Solution {
+    private boolean dfs(int node, int parent, int vis[], ArrayList<ArrayList<Integer>> 
+    adj) {
+        vis[node] = 1; 
+        // go to all adjacent nodes
+        for(int adjacentNode: adj.get(node)) {
+            if(vis[adjacentNode]==0) {
+                if(dfs(adjacentNode, node, vis, adj) == true) 
+                    return true; 
+            }
+            // if adjacent node is visited and is not its own parent node
+            else if(adjacentNode != parent) return true; 
+        }
+        return false; 
+    }
+    // Function to detect cycle in an undirected graph.
+    public boolean isCycle(int V, ArrayList<ArrayList<Integer>> adj) {
+       int vis[] = new int[V]; 
+       for(int i = 0;i<V;i++) {
+           if(vis[i] == 0) {
+               if(dfs(i, -1, vis, adj) == true) return true; 
+           }
+       }
+       return false; 
+    }
+    public static void main(String[] args)
+    {
+        ArrayList<ArrayList<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            adj.add(new ArrayList < > ());
+        }
+        adj.get(1).add(2);
+        adj.get(2).add(1);
+        adj.get(2).add(3);
+        adj.get(3).add(2);
+                
+        Solution obj = new Solution();
+        boolean ans = obj.isCycle(4, adj);
+        if (ans)
+            System.out.println("1");    
+        else
+            System.out.println("0");
+    }
+```
+**Time Complexity:** O(N + 2E) + O(N), Where N = Nodes, 2E is for total degrees as we traverse all adjacent nodes. In the case of connected components of a graph, it will take another O(N) time.
+
+**Space Complexity:** O(N) + O(N) ~ O(N), Space for recursive stack space and visited array.
 # Bipartite Graph 
 
 Problem Statement: Given an adjacency list of a graph adj of V no. of vertices having 0 based index. Check whether the graph is bipartite or not.
