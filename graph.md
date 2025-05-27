@@ -365,6 +365,7 @@ Output:  1
 
 ![image](https://github.com/soulnote/LeetCode/assets/71943647/8c9ea550-9f4e-41cc-aff3-b790f7e9b433)
 ## DFS Implementation
+![image](https://github.com/soulnote/All-images/blob/main/bipartitedfs.gif)
 ```java
 import java.util.*;
 
@@ -603,6 +604,9 @@ According to edge 4 -> 1, node 4 must appear before node 1 in the ordering.
 The above result satisfies all the necessary conditions. 
 [4, 5, 2, 3, 1, 0] is also one such topological sorting 
 that satisfies all the conditions.
+
+**Intuition:** Since we are inserting the nodes into the stack after the completion of the traversal, we are making sure, there will be no one who appears afterward but may come before in the ordering as everyone during the traversal would have been inserted into the stack. 
+Note: Points to remember, that node will be marked as visited immediately after making the DFS call and before returning from the DFS call, the node will be pushed into the stack.
 ```java
 import java.util.*;
 
@@ -685,6 +689,15 @@ According to edge 4 -> 1, node 4 must appear before node 1 in the ordering.
 The above result satisfies all the necessary conditions. 
 [4, 5, 2, 3, 1, 0] and [4, 5, 0, 2, 3, 1] are also such 
 topological sortings that satisfy all the conditions.
+
+
+### 🔍 Intuition Summary for Kahn’s Algorithm (Cycle Detection using BFS):
+
+We count how many edges come **into each node** (in-degree).
+Then, we **start from nodes with no incoming edges** (in-degree 0) — they can be safely placed first.
+As we remove a node from the queue, we **reduce the in-degree of its neighbors**, like "unlocking" the next steps.
+If a neighbor's in-degree becomes 0, it means it's ready to be processed next, so we add it to the queue.
+If we can't process all nodes this way, it means there's a **cycle blocking the order**.
 
 ```java
 import java.util.*;
@@ -878,17 +891,11 @@ class GFG
 Given an Undirected Graph having unit weight, find the shortest path from the source to all other nodes in this graph. In this problem statement, we have assumed the source vertex to be ‘0’. If a vertex is unreachable from the source node, then return -1 for that vertex.
 
 Example 1:
-
-
 Input:
 n = 9, m = 10
 edges = [[0,1],[0,3],[3,4],[4 ,5],[5, 6],[1,2],[2,6],[6,7],[7,8],[6,8]]
 src=0 
-
-
 ![image](https://github.com/soulnote/LeetCode/assets/71943647/074fb182-0416-4a6e-afa6-43f47716218b)
-
-
 Output: 0 1 2 1 2 3 3 4 4
 
 Explanation:
@@ -899,6 +906,12 @@ Where Dist[node] is the shortest path between src and
 the node. For a node, if the value of Dist[node]= -1, 
 then we conclude that the node is unreachable from 
 the src node.
+
+**Intution:** We use BFS because it explores nodes level by level, making it ideal when all edge weights are 1 (unit weights).
+Start from the source node and track distances in a distance array, initializing all distances to a large number (infinity).
+As we move to adjacent nodes, we update (relax) their distance only if we found a shorter path through the current node.
+Whenever a node's distance is updated, we push it into the queue to continue BFS from there.
+By the end, the distance array gives the shortest path from the source to all reachable nodes; unreachable ones stay as -1.
 ```java
 import java.util.*;
 import java.lang.*;
@@ -969,21 +982,21 @@ Note: What is a DAG ( Directed Acyclic Graph)?
 
 A Directed Graph (containing one-sided edges) having no cycles is said to be a Directed Acyclic Graph.
 
-Examples:
-
 Example :
 ![image](https://github.com/soulnote/LeetCode/assets/71943647/fcc12b35-a9b0-49e3-acb0-236be142f176)
-
-
 Input: n = 6, m= 7
 edges =[[0,1,2],[0,4,1],[4,5,4],[4,2,2],[1,2,3],[2,3,6],[5,3,1]]
 
-
-
 Output: 0 2 3 6 1 5
 
-Explanation:  The above output list shows the shortest path 
-to all the nodes from the source vertex (0),
+Explanation:  The above output list shows the shortest path to all the nodes from the source vertex (0).
+
+**Intution:** In a DAG, we can find shortest paths efficiently by processing nodes in topological order, so we always visit a node after all its dependencies.
+Using DFS, we create this order and store it in a stack.
+Starting from the source, we relax edges (update shortest distance) for each node using dist[u] + weight < dist[v].
+Since there are no cycles, this ensures we never re-process a node unnecessarily.
+The final dist[] array holds the shortest distance from the source to every node.
+
 ```java
 import java.util.*;
 import java.lang.*;
@@ -1083,13 +1096,8 @@ class Solution {
 Given a weighted, undirected, and connected graph of V vertices and an adjacency list adj where adj[i] is a list of lists containing two integers where the first integer of each list j denotes there is an edge between i and j, second integers corresponds to the weight of that edge. You are given the source vertex S and You have to Find the shortest distance of all the vertex from the source vertex S. You have to return a list of integers denoting the shortest distance between each node and the Source vertex S.
 
 Note: The Graph doesn’t contain any negative weight cycle.
-
 Examples: 
-
-
 ![image](https://github.com/soulnote/LeetCode/assets/71943647/153995ee-e20c-4811-98b7-4a7734c4aed4)
-
-
 
 Input:
 
@@ -1104,8 +1112,19 @@ Output:
 0 9
 
 Explanation: 
-
 The source vertex is 0. Hence, the shortest distance of node 0 from the source is 0 and the shortest distance of node 1 from source will be 9.
+
+**Intution 1 using set:** We want the shortest path from a source to all nodes, so we always explore the closest unvisited node first.
+We use a Set to keep track of nodes sorted by current shortest distance, always processing the node with minimum distance first.
+When visiting a node’s neighbors, if we find a better (shorter) path, we update the distance and push the new pair into the set.
+The set ensures that we always deal with the most promising paths first and discard longer paths to the same node.
+This approach works only with positive weights, as negative weights can lead to incorrect updates.
+**Intution 2 using queue:** We find the shortest path from a source node to all others using a min-heap priority queue to always process the node with the smallest distance first.
+At each step, we pick the top node (lowest distance), then update its neighbors’ distances if a shorter path is found.
+The updated neighbors are pushed back into the queue, and this process continues until all nodes are processed.
+This way, we always prioritize the most optimal (shortest) paths.
+Note: Works only for graphs with non-negative weights.
+
 ```java
 import java.util.*;
 import java.lang.*;
@@ -1223,17 +1242,27 @@ Problem Statement: Given a weighted, directed and connected graph of V vertices 
 Note: If the Graph contains a negative cycle then return an array consisting of only -1.
 
 Example:
-
 Input Format: 
 V = 6, 
 E = [[3, 2, 6], [5, 3, 1], [0, 1, 5], [1, 5, -3], [1, 2, -2], [3, 4, -2], [2, 4, 3]], 
 S = 0
-
-
 ![image](https://github.com/soulnote/LeetCode/assets/71943647/a523bcfc-fcc2-46ea-a0a7-1b8a00b5533a)
 
 Result: 0 5 3 3 1 2
 Explanation: Shortest distance of all nodes from the source node is returned.
+
+### 🔍 Intuition for Bellman-Ford Algorithm:
+
+Bellman-Ford helps find the **shortest path from a source node** even when the graph has **negative edge weights**, which Dijkstra cannot handle.
+The key idea is to **relax all edges** repeatedly — in each of the **V-1 iterations** (V = number of vertices), we try to improve the shortest distances.
+After these iterations, we **check once more**: if any edge can still be relaxed, that means the graph contains a **negative cycle**, and we return `[-1]`.
+
+In short:
+
+* Works for **negative weights**.
+* Can **detect negative cycles**.
+* Time complexity: **O(V × E)**, slower than Dijkstra but more powerful in certain cases.
+
 ```java
 import java.util.*;
 
@@ -1323,6 +1352,27 @@ Result:
 Explanation: In this example, the final matrix 
 is storing the shortest distances. For example, matrix[i][j] is 
 storing the shortest distance from node i to j.
+
+Sure! Here’s a **concise summary** combining the approach, steps, and intuition of the Floyd-Warshall algorithm:
+
+---
+
+### Floyd-Warshall Algorithm — Approach, Steps & Intuition
+
+**Approach:**
+Use dynamic programming on an adjacency matrix to find the shortest distances between every pair of nodes by considering each node as a possible intermediate point.
+
+**Steps:**
+
+1. Initialize the adjacency matrix with direct edge weights; use infinity where no direct edge exists. Set distance to self as 0.
+2. For each node `k` (intermediate), update all pairs `(i, j)` by checking if going through `k` is shorter:
+   `matrix[i][j] = min(matrix[i][j], matrix[i][k] + matrix[k][j])`
+3. After processing all nodes as intermediate, `matrix[i][j]` holds the shortest distance from `i` to `j`.
+4. (Optional) Check diagonal elements for negative values to detect negative cycles.
+
+**Intuition:**
+By iteratively allowing paths to pass through each node, Floyd-Warshall finds the shortest route between every pair of vertices, considering all possible intermediate nodes.
+
 ```java
 import java.util.*;
 
