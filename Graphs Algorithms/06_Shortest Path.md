@@ -203,3 +203,89 @@ class Solution {
   }
 }
 ```
+# Follow up question
+ **Can I use topological sort + relaxation repeatedly** to find **shortest paths from every node?** (i.e., from 0, then from 1, then from 2, etc.)?
+
+### Short answer: **Yes, but with a catch** — it's efficient **only for DAGs**, and you **need to run the relaxation separately for each source**.
+
+---
+
+## 🔁 **Approach for All-Pairs Shortest Paths in DAG**
+
+For each node `u` from `0` to `V-1`:
+
+1. Run topological sort (once is enough).
+2. Initialize `dist[u] = 0`, all others = ∞.
+3. Process nodes in topo order:
+
+   * Relax all outgoing edges of the current node.
+4. Save the result.
+
+---
+
+## 🧠 Why it works?
+
+* In a **DAG**, there's no risk of cycles or infinite loops.
+* **Topological order is fixed** — so you can use the **same topo sort** for all sources.
+* You just change the `dist[]` initialization each time to start from a different node.
+
+---
+
+## 🔧 Java Code Sketch (All Pairs Shortest Paths in DAG)
+
+```java
+void allPairsShortestPathsInDAG(int V, List<List<int[]>> adj) {
+    // Step 1: Get Topological Order once
+    Stack<Integer> topoStack = new Stack<>();
+    boolean[] visited = new boolean[V];
+    for (int i = 0; i < V; i++) {
+        if (!visited[i]) dfs(i, visited, topoStack, adj);
+    }
+
+    // Step 2: Run shortest path from every node
+    for (int src = 0; src < V; src++) {
+        int[] dist = new int[V];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[src] = 0;
+
+        Stack<Integer> stackCopy = (Stack<Integer>) topoStack.clone();
+
+        while (!stackCopy.isEmpty()) {
+            int u = stackCopy.pop();
+            if (dist[u] != Integer.MAX_VALUE) {
+                for (int[] edge : adj.get(u)) {
+                    int v = edge[0], w = edge[1];
+                    if (dist[u] + w < dist[v]) {
+                        dist[v] = dist[u] + w;
+                    }
+                }
+            }
+        }
+
+        System.out.println("Shortest distances from node " + src + ":");
+        for (int i = 0; i < V; i++) {
+            System.out.print((dist[i] == Integer.MAX_VALUE ? "INF" : dist[i]) + " ");
+        }
+        System.out.println("\n");
+    }
+}
+```
+
+---
+
+## 🧮 Time Complexity
+
+* Topo sort: **O(V + E)** once
+* For each source: **O(V + E)** → total **O(V*(V + E))*\*
+
+Still very efficient for sparse DAGs!
+
+---
+
+## ❗ If your graph has **cycles**, this approach **won’t work**.
+
+Then you need:
+
+* **Dijkstra’s** for non-negative weights
+* **Floyd-Warshall** for all-pairs (works for any graph)
+
