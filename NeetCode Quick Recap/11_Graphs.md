@@ -638,3 +638,149 @@ So, use **Breadth-First Search (BFS)** to find the shortest path from `beginWord
 
 ---
 
+# Word Ladder II 
+
+Given:
+
+* A `beginWord`
+* An `endWord`
+* A `wordList` containing valid intermediate words
+
+Transform `beginWord` to `endWord` such that:
+
+1. Only one letter can be changed at a time.
+2. Each transformed word must exist in the `wordList`.
+3. Return **all the shortest transformation sequences** from `beginWord` to `endWord`.
+
+Each sequence should be returned as a list of words `[beginWord, s1, s2, ..., endWord]`.
+
+If no such sequence exists, return an empty list.
+
+---
+
+###  Example
+
+#### Input:
+
+```java
+beginWord = "hit"
+endWord = "cog"
+wordList = ["hot","dot","dog","lot","log","cog"]
+```
+
+#### Output:
+
+```java
+[["hit","hot","dot","dog","cog"],["hit","hot","lot","log","cog"]]
+```
+
+#### Explanation:
+
+There are 2 shortest transformation sequences:
+
+```
+"hit" → "hot" → "dot" → "dog" → "cog"
+"hit" → "hot" → "lot" → "log" → "cog"
+```
+
+---
+
+```java
+class Solution {
+    public List<List<String>> findLadders(String beginWord, String endWord, List<String> wordList) {
+        Set<String> wordSet = new HashSet<>(wordList);
+
+        // If endWord is not in wordList, return empty result
+        if (!wordSet.contains(endWord)) return new ArrayList<>();
+
+        // Map to store reverse edges: child -> list of parent words
+        Map<String, List<String>> parents = new HashMap<>();
+
+        // Current level in BFS
+        Set<String> currentLevel = new HashSet<>();
+        currentLevel.add(beginWord);
+
+        // Track visited words globally to prevent revisiting
+        Set<String> visited = new HashSet<>();
+        boolean found = false;
+
+        // Start BFS
+        while (!currentLevel.isEmpty() && !found) {
+            Set<String> nextLevel = new HashSet<>();
+            visited.addAll(currentLevel);
+
+            for (String word : currentLevel) {
+                char[] chars = word.toCharArray();
+                for (int i = 0; i < chars.length; i++) {
+                    char original = chars[i];
+
+                    // Try replacing each character
+                    for (char c = 'a'; c <= 'z'; c++) {
+                        if (c == original) continue;
+                        chars[i] = c;
+                        String nextWord = new String(chars);
+
+                        // Skip if not in dictionary or already visited
+                        if (!wordSet.contains(nextWord) || visited.contains(nextWord)) continue;
+
+                        // Add parent for backtracking
+                        parents.computeIfAbsent(nextWord, k -> new ArrayList<>()).add(word);
+
+                        // If endWord is reached, flag found
+                        if (nextWord.equals(endWord)) found = true;
+
+                        nextLevel.add(nextWord);
+                    }
+                    chars[i] = original;
+                }
+            }
+
+            // Move to next level
+            currentLevel = nextLevel;
+        }
+
+        // Result list
+        List<List<String>> result = new ArrayList<>();
+
+        // Start backtracking from endWord to beginWord
+        if (found) {
+            List<String> path = new LinkedList<>();
+            backtrack(endWord, beginWord, parents, path, result);
+        }
+
+        return result;
+    }
+
+    // Helper DFS method to backtrack all paths
+    private void backtrack(String word, String beginWord, Map<String, List<String>> parents,
+                           List<String> path, List<List<String>> result) {
+        // Base case: reached beginWord
+        if (word.equals(beginWord)) {
+            path.add(0, word);
+            result.add(new ArrayList<>(path));
+            path.remove(0);
+            return;
+        }
+
+        // If no parents, path invalid
+        if (!parents.containsKey(word)) return;
+
+        path.add(0, word);
+        for (String parent : parents.get(word)) {
+            backtrack(parent, beginWord, parents, path, result);
+        }
+        path.remove(0);
+    }
+}
+```
+
+---
+
+###  Key Insight:
+
+* This is a **shortest path problem** where we must **return all valid paths**, not just count them.
+* The approach is:
+
+  1. Use **BFS** to build a **reverse graph** (`child → parents`) level by level.
+  2. Use **DFS** to **backtrack from `endWord` to `beginWord`**, collecting only shortest paths.
+* BFS stops **early** when `endWord` is found to improve performance.
