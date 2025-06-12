@@ -126,11 +126,28 @@ Cut rod in parts to maximize profit → Unbounded Knapsack
 | Weight/value/cost optimize ho | Knapsack based     |
 
 ---
-Thank you for the feedback! As per your request, I’ll provide a detailed Hinglish tutorial for the **0/1 Knapsack Type** pattern, covering all the example problems (0/1 Knapsack, Subset Sum, Partition Equal Subset Sum, Target Sum, Count of Subsets with Given Sum). I’ll include the intuition, approach, top-down vs. bottom-up comparison, tree diagram where needed, and Java code with comments for each problem, following the same structure as before. Next time, just give the pattern name, and I’ll deliver the same format with all example problems solved.
-
-Given your prior interest in memoization and visualizing recursion (from our previous discussion on linear DP), I’ll subtly emphasize memoization’s role and include clear recursion tree diagrams to aid understanding.
-
+## 🎯 Knapsack Visual Roadmap
 ---
+```
+                 ┌──────────────┐
+                 │ Knapsack DP  │
+                 └────┬─────────┘
+                      │
+    ┌─────────────────┼────────────────┐
+    ▼                                     ▼
+"Each item once"                    "Each item unlimited times"
+(0/1 Knapsack)                     (Unbounded Knapsack)
+    ▼                                     ▼
+  dp[i][w]                          dp[i][w] or dp[w]
+  Include or Exclude item          Try item again & again
+
+Examples:                          Examples:
+✔ 0/1 Knapsack                     ✔ Coin Change (Min/Count)
+✔ Subset Sum                       ✔ Rod Cutting
+✔ Partition Equal Subset          ✔ Integer Break
+✔ Target Sum                       ✔ Max Ribbon Cut
+✔ Count Subsets With Sum
+```
 ---
 
 ## 0/1 Knapsack Type Kya Hai?
