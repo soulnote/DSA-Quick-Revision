@@ -1,4 +1,4 @@
-# Matrix Chain Multiplication (MCM) Type Tutorial (Hinglish) – All Problems Solved
+# Matrix Chain Multiplication (MCM) Type Tutorial 
 
 Hello dosto! Aaj hum **Matrix Chain Multiplication (MCM) Type** pattern ke baare mein detail mein baat karenge. Ye pattern tab use hota hai jab humein ek sequence (jaise matrices, strings, ya expressions) ko do parts mein split karke optimal cost ya result find karna ho, aur har possible split try karni ho. Is tutorial mein hum saare example problems (Matrix Chain Multiplication, Palindrome Partitioning II, Boolean Parenthesization, Burst Balloons, Scramble String) ko solve karenge, with intuition, approach, top-down vs bottom-up comparison, tree diagram where needed, aur Java code with detailed comments at important points. Chalo shuru karte hain!
 
