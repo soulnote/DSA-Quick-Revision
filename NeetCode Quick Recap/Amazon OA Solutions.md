@@ -564,7 +564,7 @@ class Solution {
     }
 }
 ```
-I'll provide solutions for each requested LeetCode problem in Java with commented code and brief intuition summaries, each wrapped in a separate artifact, continuing with Java as per your previous request.
+# Stack & Queues
 
 ---
 
@@ -764,6 +764,374 @@ class Solution {
         
         // Remaining days in stack have no warmer day (default 0)
         return result;
+    }
+}
+```
+# HashMap 
+
+---
+
+### 1. Two Sum (LeetCode #1, Hash Map Approach)
+
+**Intuition Summary**: Find two numbers in an array that sum to a target using a hash map. Iterate through the array, storing each number and its index. For each number, check if the complement (target - number) exists in the map. If found, return their indices.
+
+```java
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        // Map to store number and its index
+        Map<Integer, Integer> map = new HashMap<>();
+        
+        // Iterate through array
+        for (int i = 0; i < nums.length; i++) {
+            int complement = target - nums[i];
+            // Check if complement exists in map
+            if (map.containsKey(complement)) {
+                return new int[] {map.get(complement), i};
+            }
+            // Add current number and index to map
+            map.put(nums[i], i);
+        }
+        
+        // No solution found (problem guarantees a solution)
+        return new int[] {};
+    }
+}
+```
+
+---
+
+### 2. Subarray Sum Equals K (LeetCode #560)
+
+**Intuition Summary**: Find the number of subarrays with sum equal to k using a hash map to store cumulative sums. For each index, compute the cumulative sum and check if (sum - k) exists in the map to count valid subarrays. Update the map with the current sum.
+
+```java
+class Solution {
+    public int subarraySum(int[] nums, int k) {
+        // Map to store cumulative sum and its frequency
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(0, 1); // Initialize with 0 sum for single subarray case
+        
+        int sum = 0;
+        int count = 0;
+        
+        // Iterate through array
+        for (int num : nums) {
+            // Update cumulative sum
+            sum += num;
+            // Add count of subarrays with sum (sum - k)
+            count += map.getOrDefault(sum - k, 0);
+            // Update map with current sum
+            map.put(sum, map.getOrDefault(sum, 0) + 1);
+        }
+        
+        return count;
+    }
+}
+```
+
+---
+
+### 3. Top K Frequent Elements (LeetCode #347)
+
+**Intuition Summary**: Find the k most frequent elements using a hash map and a min-heap. First, count frequencies with a map. Then, use a min-heap of size k to keep the k highest frequencies, updating it as needed. Extract elements from the heap for the result.
+
+```java
+class Solution {
+    public int[] topKFrequent(int[] nums, int k) {
+        // Map to store number and its frequency
+        Map<Integer, Integer> freqMap = new HashMap<>();
+        for (int num : nums) {
+            freqMap.put(num, freqMap.getOrDefault(num, 0) + 1);
+        }
+        
+        // Min-heap to store k elements based on frequency
+        PriorityQueue<Integer> minHeap = new PriorityQueue<>(
+            (a, b) -> freqMap.get(a) - freqMap.get(b)
+        );
+        
+        // Process each number
+        for (int num : freqMap.keySet()) {
+            minHeap.offer(num);
+            // Keep heap size at k
+            if (minHeap.size() > k) {
+                minHeap.poll();
+            }
+        }
+        
+        // Build result array
+        int[] result = new int[k];
+        for (int i = k - 1; i >= 0; i--) {
+            result[i] = minHeap.poll();
+        }
+        
+        return result;
+    }
+}
+```
+
+---
+
+### 4. Longest Consecutive Sequence (LeetCode #128)
+
+**Intuition Summary**: Find the longest consecutive sequence using a hash set for O(1) lookups. For each number, check if it’s the start of a sequence (no number-1 in set). If so, count consecutive numbers forward. Track the longest sequence found.
+
+```java
+class Solution {
+    public int longestConsecutive(int[] nums) {
+        // Set to store all numbers
+        Set<Integer> set = new HashSet<>();
+        for (int num : nums) {
+            set.add(num);
+        }
+        
+        int longest = 0;
+        
+        // Check each potential sequence start
+        for (int num : set) {
+            // Only process if num is start of sequence
+            if (!set.contains(num - 1)) {
+                int current = num;
+                int streak = 1;
+                
+                // Count consecutive numbers
+                while (set.contains(current + 1)) {
+                    current++;
+                    streak++;
+                }
+                
+                // Update longest streak
+                longest = Math.max(longest, streak);
+            }
+        }
+        
+        return longest;
+    }
+}
+```
+
+---
+
+### 5. Map-Based Problem (Related: LeetCode #451 - Sort Characters By Frequency)
+
+**Intuition Summary**: Sort characters in a string by their frequency using a hash map and a max-heap. Count frequencies with a map, then use a max-heap to sort characters by frequency. Build the result string by appending characters based on their frequency.
+
+```java
+class Solution {
+    public String frequencySort(String s) {
+        // Map to store character and its frequency
+        Map<Character, Integer> freqMap = new HashMap<>();
+        for (char c : s.toCharArray()) {
+            freqMap.put(c, freqMap.getOrDefault(c, 0) + 1);
+        }
+        
+        // Max-heap to sort by frequency
+        PriorityQueue<Character> maxHeap = new PriorityQueue<>(
+            (a, b) -> freqMap.get(b) - freqMap.get(a)
+        );
+        maxHeap.addAll(freqMap.keySet());
+        
+        // Build result string
+        StringBuilder result = new StringBuilder();
+        while (!maxHeap.isEmpty()) {
+            char c = maxHeap.poll();
+            int freq = freqMap.get(c);
+            for (int i = 0; i < freq; i++) {
+                result.append(c);
+            }
+        }
+        
+        return result.toString();
+    }        
+}    
+```
+
+# Sorting and searching
+
+---
+
+### 1. Merge Intervals (LeetCode #56)
+
+**Intuition Summary**: Sort intervals by start time to process them in order. Iterate through sorted intervals, merging overlapping ones by updating the end time if the current interval starts before the previous end. Add non-overlapping intervals to the result.
+
+```java
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        // Sort intervals by start time
+        Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
+        
+        // List to store merged intervals
+        List<int[]> result = new ArrayList<>();
+        
+        // Process each interval
+        for (int[] interval : intervals) {
+            // If result is empty or no overlap, add interval
+            if (result.isEmpty() || result.get(result.size() - 1)[1] < interval[0]) {
+                result.add(interval);
+            } else {
+                // Merge by updating end time
+                result.get(result.size() - 1)[1] = Math.max(result.get(result.size() - 1)[1], interval[1]);
+            }
+        }
+        
+        // Convert list to array
+        return result.toArray(new int[result.size()][]);
+    }
+}
+```
+
+---
+
+### 2. Search in Rotated Sorted Array (LeetCode #33)
+
+**Intuition Summary**: Use binary search on a rotated sorted array by determining which half is sorted. Compare the middle element with the target and endpoints to decide whether to search the sorted or unsorted half, adjusting pointers accordingly.
+
+```java
+class Solution {
+    public int search(int[] nums, int target) {
+        int left = 0;
+        int right = nums.length - 1;
+        
+        // Binary search
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            
+            if (nums[mid] == target) {
+                return mid;
+            }
+            
+            // Check if left half is sorted
+            if (nums[left] <= nums[mid]) {
+                // Check if target is in left half
+                if (nums[left] <= target && target < nums[mid]) {
+                    right = mid - 1;
+                } else {
+                    left = mid + 1;
+                }
+            } else {
+                // Right half is sorted
+                // Check if target is in right half
+                if (nums[mid] < target && target <= nums[right]) {
+                    left = mid + 1;
+                } else {
+                    right = mid - 1;
+                }
+            }
+        }
+        
+        // Target not found
+        return -1;
+    }
+}
+```
+
+---
+
+### 3. Merge Sort Implementation
+
+**Intuition Summary**: Merge sort divides the array into two halves recursively until single elements remain, then merges sorted halves by comparing and combining elements in sorted order. It ensures stable sorting with O(n log n) time complexity.
+
+```java
+class MergeSort {
+    public void mergeSort(int[] arr) {
+        // Base case: no need to sort if array is empty or has one element
+        if (arr == null || arr.length <= 1) {
+            return;
+        }
+        // Create temporary array for merging
+        int[] temp = new int[arr.length];
+        // Start merge sort
+        mergeSort(arr, 0, arr.length - 1, temp);
+    }
+    
+    // Recursive function to divide array
+    private void mergeSort(int[] arr, int left, int right, int[] temp) {
+        if (left < right) {
+            int mid = left + (right - left) / 2;
+            // Sort left half
+            mergeSort(arr, left, mid, temp);
+            // Sort right half
+            mergeSort(arr, mid + 1, right, temp);
+            // Merge sorted halves
+            merge(arr, left, mid, right, temp);
+        }
+    }
+    
+    // Merge two sorted subarrays
+    private void merge(int[] arr, int left, int mid, int right, int[] temp) {
+        // Copy elements to temporary array
+        for (int i = left; i <= right; i++) {
+            temp[i] = arr[i];
+        }
+        
+        int i = left;      // Index for left subarray
+        int j = mid + 1;   // Index for right subarray
+        int k = left;      // Index for merged array
+        
+        // Merge elements in sorted order
+        while (i <= mid && j <= right) {
+            if (temp[i] <= temp[j]) {
+                arr[k++] = temp[i++];
+            } else {
+                arr[k++] = temp[j++];
+            }
+        }
+        
+        // Copy remaining elements from left subarray
+        while (i <= mid) {
+            arr[k++] = temp[i++];
+        }
+    }
+}
+```
+
+---
+
+### 4. Quick Sort Implementation
+
+**Intuition Summary**: Quick sort selects a pivot (e.g., last element), partitions the array around it by placing smaller elements before and larger after, then recursively sorts the subarrays. It achieves O(n log n) average time complexity but O(n²) in worst cases.
+
+```java
+class QuickSort {
+    public void quickSort(int[] arr) {
+        // Start quick sort
+        quickSort(arr, 0, arr.length - 1);
+    }
+    
+    // Recursive function to sort array
+    private void quickSort(int[] arr, int low, int high) {
+        if (low < high) {
+            // Partition array and get pivot index
+            int pi = partition(arr, low, high);
+            // Sort left part
+            quickSort(arr, low, pi - 1);
+            // Sort right part
+            quickSort(arr, pi + 1, high);
+        }
+    }
+    
+    // Partition array using last element as pivot
+    private int partition(int[] arr, int low, int high) {
+        int pivot = arr[high]; // Choose last element as pivot
+        int i = low - 1;      // Index of smaller element
+        
+        // Iterate through subarray
+        for (int j = low; j < high; j++) {
+            // If current element is smaller than or equal to pivot
+            if (arr[j] <= pivot) {
+                i++;
+                // Swap elements
+                int temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+        
+        // Place pivot in correct position
+        int temp = arr[i + 1];
+        arr[i + 1] = arr[high];
+        arr[high] = temp;
+        
+        return i + 1; // Return pivot index
     }
 }
 ```
