@@ -1,3 +1,7 @@
+
+
+
+
 # 1. Generic Tree
 This code defines a `GenericTree` class that constructs and displays a generic tree from an array representation. It performs the following tasks:
 
@@ -1420,3 +1424,323 @@ For this tree:
 - **Space Complexity**: O(n), the space required for the queue and the map used to store horizontal distances.
 
 
+# Tree algorithms, organized by category. 
+⸻
+
+🌳 1. Tree Traversals
+
+Type	Description
+Inorder	Left → Root → Right (BST → sorted order)
+Preorder	Root → Left → Right
+Postorder	Left → Right → Root
+Level Order	BFS (left to right level by level)
+Zigzag Order	Level order with alternating directions
+Morris Traversal	Inorder traversal with O(1) space
+
+
+⸻
+
+🧱 2. Tree Construction
+
+Algorithm	Description
+Build Tree from Inorder + Preorder	Recursive, split using preorder + inorder
+Build Tree from Inorder + Postorder	Similar to above
+Build Binary Tree from Level Order	Queue-based
+Build BST from Sorted Array	Middle element as root
+Deserialize/Serialize Binary Tree	String ↔ Tree conversions (for network)
+BST from Preorder Traversal	Use bounds while constructing
+
+
+⸻
+
+🔍 3. Tree Search and Queries
+
+Algorithm	Description
+Search in BST	O(h), left/right traversal
+Lowest Common Ancestor (LCA)	DFS + backtracking or Binary Lifting
+Tree Diameter	Longest path between two nodes (DFS x2)
+Root-to-Leaf Path Sum	DFS / Backtracking
+All Paths from Root to Leaf	DFS path tracking
+Find Path Between Two Nodes	DFS + LCA
+
+
+⸻
+
+📐 4. Tree Properties & Calculations
+
+Property	Algorithm
+Height / Depth of Tree	DFS / BFS
+Check if Tree is Balanced	Bottom-up DFS with height check
+Validate BST	Inorder traversal or bounds method
+Count Total Nodes	DFS / Recursion
+Count Leaf / Internal Nodes	DFS
+Max Path Sum	DFS returning max gain from children
+Invert / Mirror Tree	Swap left and right children recursively
+
+
+⸻
+
+🔄 5. Tree Transformations
+
+Transformation	Description
+Flatten Binary Tree to Linked List	Right-skewed tree using preorder
+Convert BST to Greater Tree	Reverse inorder + carry sum
+BST to Doubly Linked List	Inorder traversal + pointer adjustments
+
+
+⸻
+
+📚 6. Advanced Tree Algorithms
+
+Algorithm	Use Case / Description
+Binary Lifting / LCA (sparse table)	LCA in O(logN) queries
+Euler Tour Technique	Flatten tree for RMQ and segment tree
+Heavy-Light Decomposition (HLD)	Fast path queries on trees (advanced)
+Centroid Decomposition	Divide-and-conquer on trees
+Tree DP (Dynamic Programming)	DP on children to compute tree-wide states
+Tarjan’s Offline LCA	Multiple LCA queries in one DFS pass
+
+
+⸻
+
+🧠 7. Tree Problems by Pattern
+
+Pattern	Examples
+DFS Path Tracking	Root-to-leaf sum, all paths
+Backtracking on Tree	Path Sum II, N-ary paths
+BFS Layer Processing	Level order, zigzag, right view
+Recursion + State Return	Diameter, max path, LCA
+Divide & Conquer	LCA, Tree Merge, Tree Compare
+
+
+⸻
+
+📦 8. Binary Indexed Tree (Fenwick) & Segment Tree
+
+Technically not classic trees, but tree-based data structures:
+
+Structure	Use Case
+Segment Tree	Range queries and updates (min, sum, max)
+Fenwick Tree (BIT)	Efficient prefix sum, frequency queries
+
+
+⸻
+# 🌳 TREE ALGORITHM CODE PATTERNS
+
+# // === 1. TREE TRAVERSALS ===
+```java
+void inorder(TreeNode node) {
+    if (node == null) return;
+    inorder(node.left);
+    System.out.print(node.val + " ");
+    inorder(node.right);
+}
+
+void preorder(TreeNode node) {
+    if (node == null) return;
+    System.out.print(node.val + " ");
+    preorder(node.left);
+    preorder(node.right);
+}
+
+void postorder(TreeNode node) {
+    if (node == null) return;
+    postorder(node.left);
+    postorder(node.right);
+    System.out.print(node.val + " ");
+}
+
+List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+    List<List<Integer>> result = new ArrayList<>();
+    if (root == null) return result;
+    Queue<TreeNode> queue = new LinkedList<>();
+    queue.add(root);
+    boolean leftToRight = true;
+    while (!queue.isEmpty()) {
+        int size = queue.size();
+        LinkedList<Integer> level = new LinkedList<>();
+        for (int i = 0; i < size; i++) {
+            TreeNode node = queue.poll();
+            if (leftToRight) level.addLast(node.val);
+            else level.addFirst(node.val);
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+        }
+        result.add(level);
+        leftToRight = !leftToRight;
+    }
+    return result;
+}
+```
+# // Morris Inorder Traversal
+```java
+void morrisInorder(TreeNode root) {
+    TreeNode current = root;
+    while (current != null) {
+        if (current.left == null) {
+            System.out.print(current.val + " ");
+            current = current.right;
+        } else {
+            TreeNode pre = current.left;
+            while (pre.right != null && pre.right != current) pre = pre.right;
+            if (pre.right == null) {
+                pre.right = current;
+                current = current.left;
+            } else {
+                pre.right = null;
+                System.out.print(current.val + " ");
+                current = current.right;
+            }
+        }
+    }
+}
+```
+# // === 2. TREE CONSTRUCTION ===
+```java
+TreeNode buildTreeFromInPost(int[] inorder, int[] postorder) {
+    Map<Integer, Integer> map = new HashMap<>();
+    for (int i = 0; i < inorder.length; i++) map.put(inorder[i], i);
+    return buildIP(inorder, 0, inorder.length - 1, postorder, 0, postorder.length - 1, map);
+}
+TreeNode buildIP(int[] in, int is, int ie, int[] post, int ps, int pe, Map<Integer, Integer> map) {
+    if (is > ie || ps > pe) return null;
+    TreeNode root = new TreeNode(post[pe]);
+    int inRoot = map.get(post[pe]);
+    int leftSize = inRoot - is;
+    root.left = buildIP(in, is, inRoot - 1, post, ps, ps + leftSize - 1, map);
+    root.right = buildIP(in, inRoot + 1, ie, post, ps + leftSize, pe - 1, map);
+    return root;
+}
+
+TreeNode buildBSTFromSortedArray(int[] nums, int l, int r) {
+    if (l > r) return null;
+    int mid = (l + r) / 2;
+    TreeNode root = new TreeNode(nums[mid]);
+    root.left = buildBSTFromSortedArray(nums, l, mid - 1);
+    root.right = buildBSTFromSortedArray(nums, mid + 1, r);
+    return root;
+}
+
+TreeNode bstFromPreorder(int[] preorder) {
+    return bstPre(preorder, new int[]{0}, Integer.MIN_VALUE, Integer.MAX_VALUE);
+}
+TreeNode bstPre(int[] pre, int[] index, int min, int max) {
+    if (index[0] == pre.length) return null;
+    int val = pre[index[0]];
+    if (val < min || val > max) return null;
+    TreeNode root = new TreeNode(val);
+    index[0]++;
+    root.left = bstPre(pre, index, min, val);
+    root.right = bstPre(pre, index, val, max);
+    return root;
+}
+```
+# // === 3. TREE SEARCH & QUERIES ===
+```java
+TreeNode searchBST(TreeNode root, int val) {
+    if (root == null || root.val == val) return root;
+    return val < root.val ? searchBST(root.left, val) : searchBST(root.right, val);
+}
+
+TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+    if (root == null || root == p || root == q) return root;
+    TreeNode left = lowestCommonAncestor(root.left, p, q);
+    TreeNode right = lowestCommonAncestor(root.right, p, q);
+    if (left != null && right != null) return root;
+    return left != null ? left : right;
+}
+
+int diameterOfBinaryTree(TreeNode root) {
+    maxDiameter = 0;
+    depth(root);
+    return maxDiameter;
+}
+```
+# // path sum
+```java
+boolean hasPathSum(TreeNode root, int sum) {
+    if (root == null) return false;
+    if (root.left == null && root.right == null) return root.val == sum;
+    return hasPathSum(root.left, sum - root.val) || hasPathSum(root.right, sum - root.val);
+}
+
+void allPaths(TreeNode root, List<Integer> path, List<List<Integer>> res) {
+    if (root == null) return;
+    path.add(root.val);
+    if (root.left == null && root.right == null) res.add(new ArrayList<>(path));
+    allPaths(root.left, path, res);
+    allPaths(root.right, path, res);
+    path.remove(path.size() - 1);
+}
+```
+# // === 4. TREE PROPERTIES ===
+```java
+int height(TreeNode root) {
+    if (root == null) return 0;
+    return 1 + Math.max(height(root.left), height(root.right));
+}
+
+boolean isBalanced(TreeNode root) {
+    return checkHeight(root) != -1;
+}
+int checkHeight(TreeNode root) {
+    if (root == null) return 0;
+    int lh = checkHeight(root.left);
+    int rh = checkHeight(root.right);
+    if (lh == -1 || rh == -1 || Math.abs(lh - rh) > 1) return -1;
+    return 1 + Math.max(lh, rh);
+}
+
+int countNodes(TreeNode root) {
+    if (root == null) return 0;
+    return 1 + countNodes(root.left) + countNodes(root.right);
+}
+
+int leafCount(TreeNode root) {
+    if (root == null) return 0;
+    if (root.left == null && root.right == null) return 1;
+    return leafCount(root.left) + leafCount(root.right);
+}
+
+int maxPathSum(TreeNode root) {
+    maxPath = Integer.MIN_VALUE;
+    getMaxPath(root);
+    return maxPath;
+}
+int getMaxPath(TreeNode root) {
+    if (root == null) return 0;
+    int l = Math.max(0, getMaxPath(root.left));
+    int r = Math.max(0, getMaxPath(root.right));
+    maxPath = Math.max(maxPath, l + r + root.val);
+    return root.val + Math.max(l, r);
+}
+
+TreeNode invertTree(TreeNode root) {
+    if (root == null) return null;
+    TreeNode left = invertTree(root.left);
+    TreeNode right = invertTree(root.right);
+    root.left = right;
+    root.right = left;
+    return root;
+}
+```
+# // === 5. TREE TRANSFORMATIONS ===
+```java
+void flatten(TreeNode root) {
+    if (root == null) return;
+    flatten(root.right);
+    flatten(root.left);
+    root.right = prevNode;
+    root.left = null;
+    prevNode = root;
+}
+
+TreeNode convertBST(TreeNode root) {
+    if (root == null) return null;
+    convertBST(root.right);
+    sum += root.val;
+    root.val = sum;
+    convertBST(root.left);
+    return root;
+}
+```
