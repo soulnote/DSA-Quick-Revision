@@ -90,6 +90,20 @@ FROM
  FROM Activity 
   GROUP BY machine_id, process_id) AS subq
 GROUP BY machine_id
+
+-- OR
+
+SELECT 
+    a.machine_id,
+    ROUND(AVG(b.timestamp - a.timestamp), 3) AS processing_time
+FROM Activity a
+JOIN Activity b
+  ON a.machine_id = b.machine_id
+  AND a.process_id = b.process_id
+  AND a.activity_type = 'start'
+  AND b.activity_type = 'end'
+GROUP BY a.machine_id;
+
 ```
 
 [577 - Employee Bonus](https://leetcode.com/problems/employee-bonus/solutions/)
@@ -111,7 +125,29 @@ LEFT JOIN Examinations c
 ON a.student_id = c.student_id
 AND b.subject_name = c.subject_name
 GROUP BY 1, 3
-ORDER BY 1, 3 
+ORDER BY 1, 3
+
+-- OR
+
+SELECT st.student_id,student_name,sb.subject_name,COUNT(e.student_id) AS attended_exams
+FROM Students st
+CROSS JOIN Subjects sb
+LEFT JOIN Examinations e
+ON st.student_id = e.student_id AND sb.subject_name = e.subject_name
+GROUP BY st.student_id , st.student_name ,sb.subject_name
+ORDER BY st.student_id, sb.subject_name
+
+-- OR
+SELECT s.student_id, s.student_name, sub.subject_name, COALESCE(e.attended_exams, 0) AS attended_exams
+FROM Students s
+CROSS JOIN Subjects sub
+LEFT JOIN (
+    SELECT student_id, subject_name, COUNT(*) AS attended_exams
+    FROM Examinations
+    GROUP BY student_id, subject_name
+) e ON s.student_id = e.student_id AND sub.subject_name = e.subject_name
+ORDER BY s.student_id, sub.subject_name;
+
 ```
 [570. Managers with at Least 5 Direct Reports](https://leetcode.com/problems/managers-with-at-least-5-direct-reports)
 ```sql
