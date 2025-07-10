@@ -51,37 +51,6 @@ public class QuickSortHinglish {
         // Pivot ka final index return karo
         return i + 1;
     }
-
-    // Utility method array print karne ke liye
-    public static void printArray(int[] arr) {
-        for (int i = 0; i < arr.length; i++) {
-            System.out.print(arr[i] + " ");
-        }
-        System.out.println();
-    }
-
-    // Main method jahan hum quicksort ko test karenge
-    public static void main(String[] args) {
-        int[] arr = {10, 7, 8, 9, 1, 5};
-        int n = arr.length;
-
-        System.out.println("Original Array:");
-        printArray(arr);
-
-        // Quicksort function ko call karo
-        quickSort(arr, 0, n - 1);
-
-        System.out.println("Sorted Array:");
-        printArray(arr);
-
-        int[] arr2 = {25, 2, 89, 12, 7, 0, 56};
-        int n2 = arr2.length;
-        System.out.println("\nOriginal Array 2:");
-        printArray(arr2);
-        quickSort(arr2, 0, n2 - 1);
-        System.out.println("Sorted Array 2:");
-        printArray(arr2);
-    }
 }
 ```
 
@@ -206,37 +175,6 @@ public class MergeSortHinglish {
             k++;
         }
     }
-
-    // Utility method array print karne ke liye
-    public static void printArray(int[] arr) {
-        for (int i = 0; i < arr.length; i++) {
-            System.out.print(arr[i] + " ");
-        }
-        System.out.println();
-    }
-
-    // Main method jahan hum merge sort ko test karenge
-    public static void main(String[] args) {
-        int[] arr = {12, 11, 13, 5, 6, 7};
-        int n = arr.length;
-
-        System.out.println("Original Array:");
-        printArray(arr);
-
-        // Merge Sort function ko call karo
-        mergeSort(arr, 0, n - 1);
-
-        System.out.println("Sorted Array:");
-        printArray(arr);
-
-        int[] arr2 = {38, 27, 43, 3, 9, 82, 10};
-        int n2 = arr2.length;
-        System.out.println("\nOriginal Array 2:");
-        printArray(arr2);
-        mergeSort(arr2, 0, n2 - 1);
-        System.out.println("Sorted Array 2:");
-        printArray(arr2);
-    }
 }
 ```
 
@@ -342,37 +280,6 @@ public class HeapSortHinglish {
             // Recursively affected sub-tree par heapify call karo
             heapify(arr, n, largest);
         }
-    }
-
-    // Utility method array print karne ke liye
-    public static void printArray(int[] arr) {
-        for (int i = 0; i < arr.length; i++) {
-            System.out.print(arr[i] + " ");
-        }
-        System.out.println();
-    }
-
-    // Main method jahan hum heap sort ko test karenge
-    public static void main(String[] args) {
-        int[] arr = {12, 11, 13, 5, 6, 7};
-        int n = arr.length;
-
-        System.out.println("Original Array:");
-        printArray(arr);
-
-        // Heap Sort function ko call karo
-        heapSort(arr);
-
-        System.out.println("Sorted Array:");
-        printArray(arr);
-
-        int[] arr2 = {38, 27, 43, 3, 9, 82, 10};
-        int n2 = arr2.length;
-        System.out.println("\nOriginal Array 2:");
-        printArray(arr2);
-        heapSort(arr2);
-        System.out.println("Sorted Array 2:");
-        printArray(arr2);
     }
 }
 ```
