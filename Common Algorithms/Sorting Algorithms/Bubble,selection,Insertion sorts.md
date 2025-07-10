@@ -32,33 +32,6 @@ public class InsertionSortHinglish {
             arr[j + 1] = key; // `key` ko uski sahi position par insert karo
         }
     }
-
-    // Utility method array print karne ke liye
-    public static void printArray(int[] arr) {
-        for (int i = 0; i < arr.length; i++) {
-            System.out.print(arr[i] + " ");
-        }
-        System.out.println();
-    }
-
-    // Main method jahan hum insertion sort ko test karenge
-    public static void main(String[] args) {
-        int[] arr = {12, 11, 13, 5, 6};
-        System.out.println("Original Array:");
-        printArray(arr);
-
-        insertionSort(arr);
-
-        System.out.println("Sorted Array (Insertion Sort):");
-        printArray(arr);
-
-        int[] arr2 = {5, 1, 4, 2, 8};
-        System.out.println("\nOriginal Array 2:");
-        printArray(arr2);
-        insertionSort(arr2);
-        System.out.println("Sorted Array 2 (Insertion Sort):");
-        printArray(arr2);
-    }
 }
 ```
 
@@ -121,33 +94,6 @@ public class BubbleSortHinglish {
             }
         }
     }
-
-    // Utility method array print karne ke liye
-    public static void printArray(int[] arr) {
-        for (int i = 0; i < arr.length; i++) {
-            System.out.print(arr[i] + " ");
-        }
-        System.out.println();
-    }
-
-    // Main method jahan hum bubble sort ko test karenge
-    public static void main(String[] args) {
-        int[] arr = {64, 34, 25, 12, 22, 11, 90};
-        System.out.println("Original Array:");
-        printArray(arr);
-
-        bubbleSort(arr);
-
-        System.out.println("Sorted Array (Bubble Sort):");
-        printArray(arr);
-
-        int[] arr2 = {1, 2, 3, 4, 5}; // Already sorted array
-        System.out.println("\nOriginal Array 2 (Already Sorted):");
-        printArray(arr2);
-        bubbleSort(arr2);
-        System.out.println("Sorted Array 2 (Bubble Sort):");
-        printArray(arr2);
-    }
 }
 ```
 
@@ -207,33 +153,6 @@ public class SelectionSortHinglish {
                 arr[i] = temp;
             }
         }
-    }
-
-    // Utility method array print karne ke liye
-    public static void printArray(int[] arr) {
-        for (int i = 0; i < arr.length; i++) {
-            System.out.print(arr[i] + " ");
-        }
-        System.out.println();
-    }
-
-    // Main method jahan hum selection sort ko test karenge
-    public static void main(String[] args) {
-        int[] arr = {64, 25, 12, 22, 11};
-        System.out.println("Original Array:");
-        printArray(arr);
-
-        selectionSort(arr);
-
-        System.out.println("Sorted Array (Selection Sort):");
-        printArray(arr);
-
-        int[] arr2 = {5, 4, 3, 2, 1};
-        System.out.println("\nOriginal Array 2:");
-        printArray(arr2);
-        selectionSort(arr2);
-        System.out.println("Sorted Array 2 (Selection Sort):");
-        printArray(arr2);
     }
 }
 ```
