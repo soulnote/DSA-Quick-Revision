@@ -1,579 +1,497 @@
-## **Problem: Longest Substring Without Repeating Characters**
 
-Aapko ek string `s` di gayi hai. Aapko us **sabse lambi substring ki length** dhundhni hai jismein koi bhi character **repeat na** ho.
+# Problem: Min Stack
 
-### **Example:**
+Ek stack design karna hai jo in operations ko support kare:
+
+  * `push(int val)`: Stack mein `val` add kare.
+  * `pop()`: Stack ke top se element hataye.
+  * `top()`: Stack ke top element ko return kare.
+  * `getMin()`: Stack mein current **minimum** element ko return kare, **O(1) time** mein.
+
+-----
+
+### Example:
 
 **Input:**
-`s = "abcabcbb"`
+
+```java
+["MinStack","push","push","push","getMin","pop","top","getMin"]
+[[],[-2],[0],[-3],[],[],[],[]]
+```
+
+**Output:**
+
+```java
+[null,null,null,null,-3,null,0,-2]
+```
+
+-----
+
+### Intuition (Samajh):
+
+Normal stack operations `push`, `pop`, `top` O(1) time mein ho jaati hain. Lekin `getMin()` ko O(1) mein karna challenge hai, kyunki minimum value dhundhne ke liye poore stack ko iterate karna padega jo O(N) hoga.
+
+Is problem ko solve karne ke liye, hum do stacks ka istemal karenge:
+
+1.  **Ek regular stack (`stack1`)**: Yeh saare elements ko normal tarike se store karega.
+2.  **Ek auxiliary stack (`stack2`)**: Yeh stack har point par current minimum value ko track karega. Jab bhi koi naya element push karte hain, `stack2` apne top par current minimum rakhega.
+
+-----
+
+### Approach (Tareeka):
+
+1.  **`MinStack` Constructor:**
+
+      * Do `Stack<Integer>` objects banao: `stack1` aur `stack2`.
+      * `stack2` mein shuruat mein `Integer.MAX_VALUE` push kar do. Yeh ek dummy value hai jo ensure karegi ki `stack2` kabhi khaali na ho jab hum `peek()` karein, aur pehla real number hamesha isse chota hoga, toh woh `stack2` mein push ho jayega.
+
+2.  **`push(int val)` Operation:**
+
+      * `val` ko `stack1` mein `push` kar do.
+      * Ab `val` ko `stack2` mein push karne ki baari. Condition yeh hai ki `val` ko `stack2` mein tabhi push karo jab `val` current `stack2.peek()` (yani current minimum) se **chota ya barabar** ho. `Barabar` isliye taaki agar same minimum value do baar aaye, toh dono baar store ho aur `pop` karte waqt sahi se handle ho.
+
+3.  **`pop()` Operation:**
+
+      * `stack1` se top element ko `pop` karo.
+      * Check karo ki kya `popped` value `stack2.peek()` ke barabar hai. Agar haan, toh iska matlab hai ki jo minimum value abhi tak thi, woh ab stack se nikal rahi hai. Isliye, `stack2` se bhi us element ko `pop` kar do.
+
+4.  **`top()` Operation:**
+
+      * Simply `stack1.peek()` return kar do.
+
+5.  **`getMin()` Operation:**
+
+      * Simply `stack2.peek()` return kar do. Kyunki `stack2` hamesha apne top par current minimum value rakhta hai.
+
+-----
+
+### 🔧 Java Code with Comments:
+
+```java
+import java.util.Stack; // Stack class use karne ke liye import
+
+class MinStack {
+    Stack<Integer> stack1; // Normal stack: saare elements store karega
+    Stack<Integer> stack2; // Auxiliary stack: har level par minimum element track karega
+
+    public MinStack() {
+        stack1 = new Stack<>();
+        stack2 = new Stack<>();
+        // stack2 ko Integer.MAX_VALUE se initialize karte hain
+        // taaki pehla element jo push ho woh hamesha isse chota ho
+        // aur stack2.peek() karte waqt kabhi EmptyStackException na aaye.
+        stack2.push(Integer.MAX_VALUE);
+    }
+
+    public void push(int val) {
+        stack1.push(val); // Value ko normal stack mein push karo
+
+        // Agar 'val' current minimum (stack2 ke top par) se chota ya barabar hai,
+        // toh usko stack2 mein bhi push karo.
+        // Barabar isliye taaki duplicate minimums bhi track hon.
+        if (val <= stack2.peek()) {
+            stack2.push(val);
+        }
+    }
+
+    public void pop() {
+        // Normal stack se top element nikal lo
+        int popped = stack1.pop();
+
+        // Agar nikla hua element stack2 ke top (current minimum) ke barabar hai,
+        // toh stack2 se bhi pop karo, kyunki woh minimum ab remove ho gaya hai.
+        if (popped == stack2.peek()) {
+            stack2.pop();
+        }
+    }
+
+    public int top() {
+        // Normal stack ka top element return karo
+        return stack1.peek();
+    }
+
+    public int getMin() {
+        // stack2 ka top element return karo, jo current minimum hai
+        return stack2.peek();
+    }
+}
+```
+
+-----
+
+### 🧠 Complexity
+
+  * **Time Complexity:** `O(1)` for all operations (`push`, `pop`, `top`, `getMin`). Har operation mein constant time lagta hai kyunki stack operations inherently O(1) hoti hain.
+  * **Space Complexity:** `O(N)` for both stacks. Worst-case mein, agar elements descending order mein push kiye jaayen (e.g., 5, 4, 3, 2, 1), toh `stack2` bhi `N` elements store karega. Best-case mein, agar elements ascending order mein push kiye jaayen (e.g., 1, 2, 3, 4, 5), toh `stack2` mein sirf ek element (1) rahega. Average case mein yeh `N` se kam hoga, but maximum `N` tak ja sakta hai.
+
+-----
+
+# Problem: Generate Parentheses
+
+Aapko ek integer **n** diya gaya hai jo parentheses ke pairs ki sankhya ko represent karta hai. Aapka kaam hai **n** pairs se banne wale **well-formed (valid) parentheses** ke saare combinations ko generate karna.
+
+-----
+
+### Example:
+
+**Input:**
+`n = 3`
+
+**Output:**
+`["((()))","(()())","(())()","()(())","()()()"]`
+
+**Explanation:**
+3 pairs of parentheses ke saath banne wale saare possible strings jo sahi tarah se open aur close ho rahe hain.
+
+-----
+
+### Intuition (Samajh):
+
+Yeh problem recursion aur backtracking se solve hoti hai. Hamein valid parentheses sequence banana hai. Iska matlab hai ki:
+
+1.  Kabhi bhi `open` parentheses ka count `close` parentheses ke count se kam nahi hona chahiye ek point par.
+2.  Total `open` parentheses aur total `close` parentheses `n` ke barabar hone chahiye.
+3.  `close` parentheses ka count kabhi `open` parentheses ke count se zyada nahi hona chahiye, kyunki iska matlab hoga ki hum bina open kiye hi close kar rahe hain.
+
+Is logic ko follow karte hue, hum ek-ek karke `(` ya `)` add karte jayenge aur backtrack karte jayenge.
+
+-----
+
+### Approach (Tareeka):
+
+Hum ek recursive helper function (`generate`) banayenge jo current string, bache hue `open` parentheses ka count, aur bache hue `close` parentheses ka count lega.
+
+1.  **Base Case:**
+
+      * Agar `open == 0` aur `close == 0` (matlab saare parentheses use ho gaye hain), toh current string `str` ko answer `List` mein add kar do aur `return` ho jao.
+
+2.  **Recursive Steps:**
+
+      * **`(` add karne ki condition:**
+          * Agar `open > 0` hai (matlab abhi bhi `open` parentheses add kar sakte hain), toh `str + "("` ke saath `generate` function ko call karo, `open` ko `1` se kam karke (`open - 1`). `close` same rahega.
+      * **`)` add karne ki condition:**
+          * Agar `close > open` hai (matlab abhi bhi `close` parentheses add kar sakte hain **aur** `close` ka count `open` se zyada hai, jo ensures karta hai ki sequence valid rahega, yani humne pehle koi `(` open kiya hai jise abhi close karna hai), toh `str + ")"` ke saath `generate` function ko call karo, `close` ko `1` se kam karke (`close - 1`). `open` same rahega.
+
+3.  **Main Function:**
+
+      * `List<String> ans` banao.
+      * `generate("", n, n, ans)` ko call karo (shuruat mein khaali string, `n` `open` aur `n` `close` parentheses available).
+      * `ans` ko return kar do.
+
+-----
+
+### 🔧 Java Code with Comments:
+
+```java
+import java.util.ArrayList; // ArrayList use karne ke liye import
+import java.util.List;     // List interface use karne ke liye import
+
+class Solution {
+    public List<String> generateParenthesis(int n) {
+        List<String> ans = new ArrayList<>(); // Final list jismein saare valid combinations honge
+        // Helper function ko call karo:
+        // "" -> abhi tak ki string
+        // n -> bache hue '(' parentheses ki sankhya
+        // n -> bache hue ')' parentheses ki sankhya
+        // ans -> jismein results store honge
+        generate("", n, n, ans);
+        return ans;
+    }
+
+    // Recursive helper function
+    // str: abhi tak banayi gayi parentheses string
+    // open: kitne '(' parentheses abhi bhi add kar sakte hain
+    // close: kitne ')' parentheses abhi bhi add kar sakte hain
+    // ans: list jismein final valid strings add honge
+    private void generate(String str, int open, int close, List<String> ans) {
+        // Base case: Jab saare '(' aur ')' parentheses use ho chuke hain
+        if (open == 0 && close == 0) {
+            ans.add(str); // Current valid string ko answer list mein add karo
+            return;        // Recursion khatam
+        }
+
+        // Condition 1: Agar abhi bhi '(' parentheses add kar sakte hain
+        if (open > 0) {
+            // '(' add karo aur open count ko 1 kam karo
+            generate(str + "(", open - 1, close, ans);
+        }
+
+        // Condition 2: Agar abhi bhi ')' parentheses add kar sakte hain AND
+        // ')' ka count '(' ke count se zyada hai.
+        // Yeh condition ensure karti hai ki hum hamesha ek '(' ko close kar rahe hain.
+        // Matbal, string mein kabhi bhi ')' '(' se zyada nahi honge.
+        if (close > open) {
+            // ')' add karo aur close count ko 1 kam karo
+            generate(str + ")", open, close - 1, ans);
+        }
+    }
+}
+```
+
+-----
+
+# Problem: Car Fleet
+
+Aapko **n** cars di gayi hain. Har car ek one-dimensional road par ek certain **position** par hai, mile 0 se shuru hokar ek **target** mile ki taraf jaa rahi hai. Har car ki apni **speed** hai.
+
+**Rules:**
+
+  * Cars ek doosre ko **pass nahi** kar sakti.
+  * Jab ek **tez car ek dheemi car ko pakad leti hai**, toh woh dono milkar ek "**car fleet**" bana lete hain aur **dheemi car ki speed** se aage badhte hain.
+  * Ek car fleet ek ya ek se zyada cars ka group hai jo same speed se ek saath travel kar rahe hain.
+  * Agar ek car theek **target par hi pakad leti hai**, toh use bhi us fleet ka part mana jata hai.
+
+**Goal:**
+Target par pahunchne wale car fleets ki sankhya return karo.
+
+-----
+
+### Example:
+
+**Input:**
+`target = 12`
+`position = [10,8,0,5,3]`
+`speed = [2,4,1,1,3]`
 
 **Output:**
 `3`
 
 **Explanation:**
-Sabse lambi substring jismein characters repeat nahi ho rahe hain, woh `"abc"` hai, aur uski length `3` hai.
+
+  * Positions 10 (speed 2) aur 8 (speed 4) par cars theek target par milti hain aur ek fleet banati hain.
+  * Position 0 (speed 1) par car kabhi doosron ko nahi pakad paati, apni khud ki fleet banati hai.
+  * Positions 5 (speed 1) aur 3 (speed 3) par cars mile 6 par pehle hi mil jaati hain, aur speed 1 par ek fleet ki tarah travel karti hain.
 
 -----
 
-### **Intuition (Samajh):**
+### Intuition (Samajh):
 
-Hamein ek "window" banani hai string ke andar. Yeh window aisi honi chahiye jismein koi bhi character repeat na ho. Hamein is window ki maximum possible length chahiye.
+Cars ek doosre ko pass nahi kar sakti. Iska matlab hai ki agar ek faster car kisi slower car ko pakadti hai, toh woh faster car slower car ki speed se chalna shuru kar degi. Iska implication yeh hai ki **fleet ki speed hamesha slowest car ki speed hogi jo us fleet ko bana rahi hai**.
 
-Jab hum window ko right side se badhate hain, aur ek aisa character milta hai jo **already window mein hai**, toh iska matlab hai ki humari current window ab invalid ho gayi. Isko valid banane ke liye, hamein window ko left side se chhota karna padega. Left pointer ko us repeating character ke **pichle occurrence ke ek aage** tak move karna hoga.
+Agar hum cars ko unki **target se duri** ke hisab se dekhein, toh jo car **target ke sabse paas** hai, woh pehle pahunchegi (ya fleet banayegi). Agar koi usse peeche wali car us car ko target se pehle pakad sakti hai, toh woh dono ek fleet bana lenge.
 
-Ek `HashMap` ka use karke hum har character ka latest index store kar sakte hain. Isse hamein pata chal jayega ki agar koi character repeat hota hai, toh uski pichli occurrence kahan thi.
-
------
-
-### **Approach (Tareeka):**
-
-Hum **sliding window** technique use karenge.
-
-1.  **Variables Initialize Karein:**
-
-      * `HashMap<Character, Integer> map`: Yeh har character aur uske **latest index** ko store karega.
-      * `left = 0`, `right = 0`: Sliding window ke do pointers.
-      * `longest = 0`: Sabse lambi unique substring ki length track karega.
-
-2.  **Window Ko Slide Karein:**
-
-      * `while (right < s.length())` loop chalao.
-      * Current character `ch = s.charAt(right)` ko dekho.
-      * **Condition Check:**
-          * **Agar `ch` `map` mein nahi hai (yaani current window mein naya hai):**
-              * `map.put(ch, right)`: `ch` ko uske index ke saath map mein daal do.
-              * `right++`: Window ko right side se aage badhao.
-          * **Agar `ch` `map` mein already hai (yaani duplicate mila):**
-              * `left = Math.max(left, map.get(ch) + 1);`: `left` pointer ko update karo. Ab naya `left` ya toh current `left` hi rahega, ya phir `ch` ke **pichle occurrence ke just aage** wale index par chala jayega. Is `Math.max` se yeh ensure hota hai ki `left` hamesha rightward hi move karega (kabhi peeche nahi jayega) aur current duplicate ko effectively exclude kar dega.
-              * `map.put(ch, right);`: Current character `ch` ka index `map` mein update kar do (kyunki hamein latest index chahiye).
-              * `right++`: Window ko right side se aage badhao.
-      * **Length Update Karein:** Har step par `longest` ko update karo: `longest = Math.max(longest, right - left);`. `right - left` current window ki length hai (jo hamesha unique characters wali hogi).
-
-3.  **Return:** `longest` ko return kar do.
+Is problem ko solve karne ka sabse behtar tareeka hai cars ko unki **starting position ke hisab se sort** karna, aur phir **target ki taraf se (reverse order mein)** check karna.
 
 -----
 
-### **Java Solution with Comments:**
+### Approach (Tareeka):
+
+1.  **Car Data Prepare Karein:**
+
+      * Har car ke liye uski `position` aur `time_to_target` calculate karo. `time_to_target = (target - position) / speed`.
+      * Ek `double[][]` array `posTime` banao jismein `[position, time_to_target]` ke pairs honge.
+
+2.  **Sort Karein:**
+
+      * `posTime` array ko `position` ke hisab se **ascending order** mein sort kar do. Ab cars sabse peeche se sabse aage tak arrange ho gayi hain.
+
+3.  **Fleets Count Karein (Stack ka Use):**
+
+      * Ek `Stack<Double>` banao jo fleets ke **arrival times at target** ko store karega. Stack mein hum sirf un fleets ke times store karenge jo `target` par alag se pahunchenge.
+      * `posTime` array ko **reverse order** mein traverse karo (matlab target ke sabse paas wali car se shuru karke).
+      * Har car `i` ke liye:
+          * Agar `stack` **khaali hai** (matlab yeh pehli car hai jo hum dekh rahe hain, ya koi fleet abhi tak stack mein nahi hai), toh is car ka `time_to_target` (`posTime[i][1]`) stack mein `push` kar do. Yeh ek nayi fleet banati hai.
+          * Else (`stack` khaali nahi hai):
+              * Compare karo current car ka `time_to_target` (`posTime[i][1]`) stack ke `peek()` (yani current fleet ke arrival time) se.
+              * Agar current car ka `time_to_target` **zyada hai** `stack.peek()` se, toh iska matlab hai ki yeh car pichli fleet ko pakad nahi paayegi aur apni khud ki ek nayi fleet banayegi. Toh, is car ka `time_to_target` stack mein `push` kar do.
+              * Agar current car ka `time_to_target` **kam ya barabar hai** `stack.peek()` se, toh iska matlab hai ki yeh car pichli fleet ko target par ya usse pehle pakad legi aur usi fleet ka hissa ban jayegi. Is case mein, stack mein kuch bhi add karne ki zaroorat nahi hai (kyunki woh already existing fleet mein merge ho jayegi).
+
+4.  **Result Return Karein:**
+
+      * `stack.size()` return kar do. Stack mein jitne elements honge, utni hi fleets target par pahunchengi.
+
+-----
+
+### 🔧 Java Code with Comments:
 
 ```java
-import java.util.HashMap; // HashMap use karne ke liye import
+import java.util.Arrays; // Arrays.sort() use karne ke liye
+import java.util.Stack;  // Stack use karne ke liye
 
 class Solution {
-    public int lengthOfLongestSubstring(String s) {
-        // Map jo har character ka sabse naya index store karega
-        HashMap<Character, Integer> map = new HashMap<>();
+    public int carFleet(int target, int[] position, int[] speed) {
+        int n = position.length; // Total cars ki sankhya
 
-        int left = 0, right = 0;   // Sliding window ke pointers: left shuruat, right aakhri
-        int longest = 0;           // Abhi tak mili sabse lambi unique substring ki length
+        // double[][] array banaya (position, time_to_target) pairs store karne ke liye
+        double[][] posTime = new double[n][2];
 
-        // Jab tak right pointer string ke end tak nahi pahunchta
-        while (right < s.length()) { // Loop 'right' pointer ko aage badhaega
-            char ch = s.charAt(right); // Current character jahan right pointer hai
-
-            // Agar current character 'ch' map mein pehle se hai (matlab duplicate mila)
-            if (map.containsKey(ch)) {
-                // 'left' pointer ko update karo. Naya 'left' ya toh current 'left' hi rahega,
-                // ya phir duplicate character 'ch' ke pichle index + 1 par chala jayega.
-                // Math.max isliye taaki 'left' kabhi peeche na jaye, hamesha aage hi badhe.
-                left = Math.max(left, map.get(ch) + 1);
-            }
-
-            // Current character 'ch' aur uska index 'right' map mein store ya update karo.
-            // Chahe 'ch' naya ho ya duplicate, hum uska latest index store karenge.
-            map.put(ch, right);
-
-            // Current window (left se right tak) ki length calculate karo: right - left + 1.
-            // Aur 'longest' ko update karo agar current window ki length zyada hai.
-            longest = Math.max(longest, right - left + 1);
-
-            right++; // Right pointer ko ek step aage badhao, window ko expand karo
+        // Har car ke liye target tak pahunchne ka time calculate karo
+        for (int i = 0; i < n; i++) {
+            double time = (double)(target - position[i]) / speed[i]; // Time = Distance / Speed
+            posTime[i] = new double[]{position[i], time}; // Pair ko store karo
         }
 
-        return longest; // Sabse lambi unique-character substring ki length return karo
+        // Cars ko unki starting position ke hisab se ascending order mein sort karo.
+        // Matlab, sabse peeche wali car pehle, sabse aage wali car baad mein.
+        Arrays.sort(posTime, (a, b) -> Double.compare(a[0], b[0]));
+
+        Stack<Double> stack = new Stack<>(); // Stack jo fleets ke arrival times ko store karega
+
+        // Ab cars ko reverse order mein traverse karo (target ke sabse paas wali car se shuru karke).
+        // Is order mein hum check kar sakte hain ki peeche wali car aage wali fleet ko pakad payegi ya nahi.
+        for (int i = n - 1; i >= 0; i--) {
+            // Agar stack khaali hai (matlab yeh pehli fleet hai jo hum observe kar rahe hain)
+            // Ya current car ka target tak pahunchne ka time stack ke top (pichli fleet ke arrival time) se zyada hai.
+            // Zyada time ka matlab hai ki yeh car pichli fleet ko pakad nahi payegi.
+            if (stack.isEmpty() || posTime[i][1] > stack.peek()) {
+                stack.push(posTime[i][1]); // Toh yeh car ek nayi fleet banati hai, iska time stack mein push karo.
+            }
+            // Else (agar current car ka time stack.peek() se kam ya barabar hai),
+            // Toh yeh car pichli fleet ko pakad legi aur usi fleet ka hissa ban jayegi.
+            // Stack mein kuch bhi add karne ki zaroorat nahi hai, kyunki fleet already represent ho rahi hai.
+        }
+
+        // Stack mein jitne elements hain, utni hi fleets target par pahunchengi.
+        return stack.size();
     }
 }
 ```
 
 -----
 
-## **Problem: Longest Repeating Character Replacement**
+# Problem: Largest Rectangle in Histogram
 
-Aapko ek string `s` di gayi hai jismein sirf uppercase English letters hain, aur ek integer `k`.
-Aap string mein **zyada se zyada `k` characters ko** kisi bhi doosre uppercase letter se **replace** kar sakte ho.
+Aapko integers ka ek array `heights` diya gaya hai. Yeh histogram mein bars ki heights ko represent karta hai, jahaan har bar ki width 1 hai. Aapko us **sabse bade rectangle ka area** dhundhna hai jo is histogram ke andar ban sakta hai.
 
-Aapka goal hai us **sabse lambi substring ki length** dhundhna jismein replacements karne ke baad **saare characters same letter** ke hon.
+-----
 
-### **Example:**
+### Example:
 
 **Input:**
-`s = "ABAB", k = 2`
+`heights = [2,1,5,6,2,3]`
 
 **Output:**
-`4`
+`10`
 
 **Explanation:**
-Hum do `'A'`s ko `'B'`s se (ya vice versa) replace kar sakte hain, jisse `"BBBB"` ya `"AAAA"` banega, jiski length `4` hai.
+Sabse bada rectangle heights `[5,6]` wale bars se banta hai, jiski width 2 hai, area = 5 \* 2 = 10.
 
 -----
 
-### **Intuition (Samajh):**
+### Intuition (Samajh):
 
-Hamein ek window chahiye jismein hum `k` replacements karke us window ke saare characters ko same bana saken. Jis window mein aisa karne se sabse lambi substring milegi, wahi hamara answer hoga.
+Agar hum kisi bhi bar `heights[i]` ko rectangle ki height maante hain, toh us rectangle ki width kitni hogi? Uski width utni hogi jab tak us height `heights[i]` se chota koi bar uske left ya right mein nahi aa jata. Agar koi chota bar aa jata hai, toh current bar se bana rectangle wahan tak hi extend kar payega.
 
-Ek sliding window approach use karenge. Jab hum window ko slide karte hain, toh hamein yeh pata hona chahiye ki current window mein kitne characters ko replace karna padega taaki saare characters same ho jayen.
+Iska matlab hai ki har bar ke liye, hamein do cheezein dhundhni hain:
 
-Agar current window ki `total length` mein se `sabse zyada baar aane wale character ki frequency` ko hata dein, toh bache hue characters woh honge jinhe hamein replace karna padega. Agar yeh count `k` se zyada ho jata hai, toh matlab humari window bahut badi ho gayi hai aur usko chhota karna padega left side se.
+1.  **Next Smaller Element to the Left (NSL):** Left side mein sabse pehla bar jo current bar se chota hai, uska index.
+2.  **Next Smaller Element to the Right (NSR):** Right side mein sabse pehla bar jo current bar se chota hai, uska index.
 
------
+Jab hamein NSL aur NSR mil jaayenge, toh current bar `heights[i]` se banne wale rectangle ki width hogi: `(NSR[i] - NSL[i] - 1)`. Aur area hoga `heights[i] * width`. Hamein saare bars ke liye yeh calculate karke maximum area dhundhna hai.
 
-### **Approach (Tareeka):**
-
-1.  **Variables Initialize Karein:**
-
-      * `HashMap<Character, Integer> count`: Current window mein har character ki frequency track karega.
-      * `res = 0`: Sabse lambi valid window ki length store karega.
-      * `l = 0`: Left pointer of the window.
-      * `maxf = 0`: Current window mein kisi bhi character ki maximum frequency.
-
-2.  **Window Ko Slide Karein (`r` pointer se):**
-
-      * `for (int r = 0; r < s.length(); r++)` loop chalao (right pointer).
-      * Current character `s.charAt(r)` ki frequency `count` map mein badhao.
-      * `maxf = Math.max(maxf, count.get(s.charAt(r)))`: `maxf` ko update karo, current character ki frequency ke base par.
-
-3.  **Window Validity Check aur Shrink:**
-
-      * Condition: `(r - l + 1) - maxf > k`
-          * `r - l + 1` current window ki length hai.
-          * `maxf` us window mein sabse zyada baar aane wale character ki frequency.
-          * `window size - maxf` = un characters ki sankhya jinhein replace karna padega.
-      * Agar `replace karne wale characters` ki sankhya `k` se zyada hai:
-          * `count.put(s.charAt(l), count.get(s.charAt(l)) - 1);`: `left` pointer par jo character hai, uski frequency `count` map mein kam karo.
-          * `l++`: `left` pointer ko aage badhao, window ko chhota karo.
-
-4.  **Result Update Karein:**
-
-      * `res = Math.max(res, r - l + 1);`: Har iteration mein, `res` ko current valid window ki length (`r - l + 1`) se update karo.
-
-5.  **Return:** `res` ko return kar do.
+**Stack** ek bahut useful data structure hai NSL aur NSR ko efficiently (O(N) time) dhundhne ke liye. Stack mein hum indices ko increasing order of heights mein rakhenge.
 
 -----
 
-### **Java Solution with Comments:**
+### Approach (Tareeka):
+
+1.  **NSL aur NSR Arrays:**
+
+      * Do arrays `nextsmallerLeft` aur `nextsmallerRight` banao, size `n` (heights.length) ka.
+      * `nextsmallerLeft[i]` mein `i` ke left mein pehle smaller element ka index store hoga. Agar koi nahi hai, toh `-1` store karo.
+      * `nextsmallerRight[i]` mein `i` ke right mein pehle smaller element ka index store hoga. Agar koi nahi hai, toh `n` (array length) store karo.
+
+2.  **NSL Calculate Karein (Left se Right Traverse):**
+
+      * Ek `Stack<Integer>` `st` banao.
+      * `for (int i = 0; i < n; i++)` loop chalao.
+      * **Pop from Stack:** Jab tak stack khaali nahi hai aur `heights[st.peek()]` current `heights[i]` se bada ya barabar hai, tab tak stack se elements `pop()` karte raho. (Kyunki yeh elements ab `heights[i]` ke liye left smaller nahi ban sakte, aur `heights[i]` unse chota hai toh woh future mein kisi aur ke liye `nextsmaller` ban sakte hain).
+      * **Assign NSL:**
+          * Agar `st` khaali ho gaya, toh `nextsmallerLeft[i] = -1` (koi smaller element nahi mila left mein).
+          * Warna, `nextsmallerLeft[i] = st.peek()` (stack ke top par jo index hai, wahi `nextsmallerLeft` hai).
+      * **Push to Stack:** Current index `i` ko `st.push(i)` kar do.
+
+3.  **NSR Calculate Karein (Right se Left Traverse):**
+
+      * `st` ko `clear()` kar do.
+      * `for (int i = n - 1; i >= 0; i--)` loop chalao.
+      * **Pop from Stack:** Jab tak stack khaali nahi hai aur `heights[st.peek()]` current `heights[i]` se bada ya barabar hai, tab tak stack se elements `pop()` karte raho.
+      * **Assign NSR:**
+          * Agar `st` khaali ho gaya, toh `nextsmallerRight[i] = n` (koi smaller element nahi mila right mein, `n` ka matlab array ke bahar).
+          * Warna, `nextsmallerRight[i] = st.peek()`.
+      * **Push to Stack:** Current index `i` ko `st.push(i)` kar do.
+
+4.  **Max Area Calculate Karein:**
+
+      * `maxArea = 0` initialize karo.
+      * `for (int i = 0; i < n; i++)` loop chalao.
+      * `height = heights[i]`.
+      * `width = nextsmallerRight[i] - nextsmallerLeft[i] - 1`. (Formula ko samjho: `nextsmallerRight[i]` exclusive boundary hai, `nextsmallerLeft[i]` exclusive boundary hai. Inke beech ki distance hi width hai, minus 1 kyunki indices 0-based hote hain.)
+      * `area = height * width`.
+      * `maxArea = Math.max(maxArea, area)`.
+
+5.  **Return:** `maxArea` return kar do.
+
+-----
+
+### 🔧 Java Code with Comments:
 
 ```java
-import java.util.HashMap; // HashMap use karne ke liye import
-
-public class Solution {
-    public int characterReplacement(String s, int k) {
-        // HashMap jo current window mein har character ki frequency track karega
-        HashMap<Character, Integer> count = new HashMap<>();
-        int res = 0;  // Sabse lambi valid window ki length store karega
-        int l = 0;    // Window ka left pointer
-        int maxf = 0; // Current window mein kisi bhi character ki maximum frequency
-
-        // 'r' pointer se string par iterate karte hain, window ko right se expand karte hue
-        for (int r = 0; r < s.length(); r++) {
-            char currentChar = s.charAt(r); // Current character jahan 'r' pointer hai
-
-            // Current character ki frequency 'count' map mein badhao
-            count.put(currentChar, count.getOrDefault(currentChar, 0) + 1);
-
-            // Current window mein kisi bhi character ki max frequency update karo
-            maxf = Math.max(maxf, count.get(currentChar));
-
-            // Check karo ki current window valid hai ya nahi (kya hamein k se zyada replacements chahiye?)
-            // (Window ki size) - (sabse frequent character ki frequency) = Characters jo replace karne hain
-            if ((r - l + 1) - maxf > k) {
-                // Agar replace karne wale characters 'k' se zyada hain, toh window ko left se shrink karo
-                char leftChar = s.charAt(l); // Left pointer par jo character hai
-                count.put(leftChar, count.get(leftChar) - 1); // Uski frequency map mein kam karo
-                l++; // Left pointer ko aage badhao, window choti karo
-            }
-
-            // Har step par 'res' ko current valid window ki size se update karo
-            // Current window ki size = r - l + 1
-            res = Math.max(res, r - l + 1);
-        }
-
-        return res; // Sabse lambi valid substring ki length return karo
-    }
-}
-```
-
------
-
-## **Problem: Permutation in String**
-
-Aapko do strings `s1` aur `s2` di gayi hain. Aapko `true` return karna hai agar **`s2` ke andar `s1` ka koi permutation** maujood hai — doosre shabdon mein, agar `s2` ki koi bhi substring `s1` ka rearrangement hai.
-
-### **Example:**
-
-**Input:**
-`s1 = "ab"`
-`s2 = "eidbaooo"`
-
-**Output:**
-`true`
-
-**Explanation:**
-`s2` mein substring `"ba"` `s1` ka permutation hai.
-
------
-
-### **Intuition (Samajh):**
-
-Ek string doosri string ka permutation hai ya nahi, yeh check karne ka sabse accha tareeka unki **character frequencies** ko compare karna hai. Agar dono strings mein har character ki frequency same hai, toh woh ek doosre ke permutation hain.
-
-Yahan, hamein `s2` ke andar `s1` ki length ki ek substring dhundhni hai jo `s1` ka permutation ho. Iske liye hum **fixed-size sliding window** technique use kar sakte hain. Window ka size `s1.length()` ke barabar hoga.
-
------
-
-### **Approach (Tareeka):**
-
-1.  **Initial Checks:**
-
-      * Agar `s1` ki length `s2` se zyada hai, toh permutation possible hi nahi. `false` return kar do.
-
-2.  **Frequency Arrays Initialize Karein:**
-
-      * Do `int` arrays (`size 26` for 'a' to 'z' characters) banao:
-          * `s1Freq`: `s1` ke characters ki frequency store karega.
-          * `windowFreq`: Current window of `s2` ke characters ki frequency store karega.
-
-3.  **First Window Prepare Karein:**
-
-      * `s1.length()` tak loop chalao.
-      * `s1` ke characters ki frequency `s1Freq` mein bharo.
-      * `s2` ke pehle `s1.length()` characters ki frequency `windowFreq` mein bharo (yeh aapki initial window hogi).
-
-4.  **Window Ko Slide Karein (`i` pointer se):**
-
-      * `i` ko `s1.length()` se `s2.length()` tak loop chalao.
-      * **Permutation Check:** Har step par `Arrays.equals(s1Freq, windowFreq)` se check karo ki kya current `windowFreq` `s1Freq` ke barabar hai. Agar haan, toh `true` return kar do.
-      * **Slide The Window:**
-          * `windowFreq[s2.charAt(i) - 'a']++`: Naye character ko window mein add karo (jo `s2` ka `i`-th character hai).
-          * `windowFreq[s2.charAt(i - s1.length()) - 'a']--`: Window ke left se bahar nikalne wale character ko remove karo. (Yeh `i - s1.length()` index par hoga).
-
-5.  **Last Window Check:**
-
-      * Loop khatam hone ke baad, last window ko bhi check karna zaroori hai, kyunki `if (Arrays.equals(...))` check loop ke *andar* aur `i` ke `increment` hone *se pehle* hota hai.
-      * `return Arrays.equals(s1Freq, windowFreq);`
-
------
-
-### **Java Solution with Comments:**
-
-```java
-import java.util.Arrays; // Arrays.equals() use karne ke liye
+import java.util.Stack; // Stack class use karne ke liye import
 
 class Solution {
-    public boolean checkInclusion(String s1, String s2) {
-        // Agar s1 s2 se lambi hai, toh s2 mein s1 ka koi permutation possible nahi hai.
-        if (s1.length() > s2.length()) return false;
+    public int largestRectangleArea(int[] heights) {
+        int n = heights.length; // Heights array ki length
 
-        // Characters 'a' se 'z' tak ki frequency store karne ke liye arrays.
-        // Size 26 hai kyunki English alphabet mein 26 letters hote hain.
-        int[] s1Freq = new int[26];
-        int[] windowFreq = new int[26];
+        // nextsmallerLeft[i]: heights[i] ke left mein sabse pehle chote element ka index
+        int[] nextsmallerLeft = new int[n];
+        // nextsmallerRight[i]: heights[i] ke right mein sabse pehle chote element ka index
+        int[] nextsmallerRight = new int[n];
 
-        // s1 aur s2 ki pehli window (s1 ki length tak) ke liye frequency arrays ko initialize karo.
-        for (int i = 0; i < s1.length(); i++) {
-            s1Freq[s1.charAt(i) - 'a']++; // s1 ke char ki frequency badhao
-            windowFreq[s2.charAt(i) - 'a']++; // s2 ki pehli window ke char ki frequency badhao
-        }
+        Stack<Integer> st = new Stack<>(); // Indices store karne ke liye stack
 
-        // Ab window ko s2 par slide karo.
-        // 'i' pointer naye character ko window mein add karega.
-        for (int i = s1.length(); i < s2.length(); i++) {
-            // Check karo ki kya current window s1 ka permutation hai (frequencies match kar rahi hain?)
-            if (Arrays.equals(s1Freq, windowFreq)) {
-                return true; // Agar match karta hai, toh true return karo
+        // Step 1: Har bar ke liye left mein next smaller element dhundo
+        // Loop left se right chalega
+        for (int i = 0; i < n; i++) {
+            // Jab tak stack khaali nahi hai aur stack ke top par jo index hai uski height
+            // current bar heights[i] se badi ya barabar hai, tab tak stack se pop karte raho.
+            // Kyunki current heights[i] inko (stack ke elements ko) ignore kar dega as smaller element,
+            // aur future mein ye stack ke elements kabhi max area ke liye border nahi banenge.
+            while (!st.isEmpty() && heights[st.peek()] >= heights[i]) {
+                st.pop();
             }
-
-            // Window ko slide karo:
-            // 1. Naye character ko window mein add karo.
-            windowFreq[s2.charAt(i) - 'a']++;
-            // 2. Pichli window ke pehle character ko remove karo.
-            // s2.charAt(i - s1.length()) woh character hai jo ab window se bahar nikal raha hai.
-            windowFreq[s2.charAt(i - s1.length()) - 'a']--;
+            // Agar stack khaali hai, matlab current bar ke left mein koi chota element nahi hai.
+            if (st.isEmpty()) {
+                nextsmallerLeft[i] = -1; // -1 assign karo
+            } else {
+                // Warna, stack ke top par jo index hai, wahi next smaller element hai.
+                nextsmallerLeft[i] = st.peek();
+            }
+            st.push(i); // Current index ko stack mein push karo
         }
 
-        // Loop khatam hone ke baad, aakhri window ko bhi check karna zaroori hai.
-        return Arrays.equals(s1Freq, windowFreq);
+        st.clear(); // Stack ko clear karo next calculation ke liye
+
+        // Step 2: Har bar ke liye right mein next smaller element dhundo
+        // Loop right se left chalega
+        for (int i = n - 1; i >= 0; i--) {
+            // Same logic, bas direction alag hai
+            while (!st.isEmpty() && heights[st.peek()] >= heights[i]) {
+                st.pop();
+            }
+            // Agar stack khaali hai, matlab current bar ke right mein koi chota element nahi hai.
+            // 'n' assign karo (array bounds ke bahar)
+            if (st.isEmpty()) {
+                nextsmallerRight[i] = n;
+            } else {
+                nextsmallerRight[i] = st.peek();
+            }
+            st.push(i); // Current index ko stack mein push karo
+        }
+
+        int maxArea = 0; // Maximum area store karne ke liye variable
+
+        // Step 3: Har bar ke liye possible max area calculate karo
+        for (int i = 0; i < n; i++) {
+            int height = heights[i]; // Current bar ki height
+            // Rectangle ki width: (right smaller index) - (left smaller index) - 1
+            // (-1 because indices are 0-based and boundaries are exclusive)
+            int width = nextsmallerRight[i] - nextsmallerLeft[i] - 1;
+            int area = height * width; // Current bar se banne wala area
+            maxArea = Math.max(maxArea, area); // maxArea ko update karo
+        }
+
+        return maxArea; // Sabse bada rectangle area return karo
     }
 }
 ```
-
------
-
-## **Problem: Minimum Window Substring**
-
-Aapko do strings `s` aur `t` di gayi hain. Aapko `s` ki **minimum window substring** return karni hai jismein `t` ke **saare characters (duplicates sahit)** maujood hon. Agar aisi koi substring nahi milti, toh `""` return karo.
-
-Answer ke **unique** hone ki guarantee hai.
-
-### **Example:**
-
-**Input:**
-`s = "ADOBECODEBANC"`
-`t = "ABC"`
-
-**Output:**
-`"BANC"`
-
-**Explanation:**
-Substring `"BANC"` `s` mein sabse choti window hai jismein `t` ke saare characters hain.
-
------
-
-### **Intuition (Samajh):**
-
-Yeh bhi ek **sliding window** problem hai, lekin yahan window ka size fixed nahi hai. Hamein `s` mein ek aisi window dhundhni hai jo `t` ke saare characters (unke counts ke saath) contain karti ho, aur phir unmein se **sabse choti** window ko return karna hai.
-
-Hum do pointers (`left` aur `right`) use karenge. `right` pointer se window ko expand karenge jab tak `t` ke saare required characters mil nahi jaate. Jab mil jayenge, toh `left` pointer se window ko shrink karna shuru karenge, jab tak window valid rahe. Har valid window milne par uski length ko track karenge aur sabse choti length wali window ko store kar lenge.
-
-`Frequency arrays` kaafi useful rahenge characters aur unke counts ko track karne ke liye.
-
------
-
-### **Approach (Tareeka):**
-
-1.  **Edge Cases Handle Karein:**
-
-      * Agar `s` `t` se choti hai, ya `t` ya `s` khaali hain, toh `""` return kar do.
-
-2.  **Frequency Arrays Initialize Karein:**
-
-      * `tFq = new int[128]`: `t` ke characters ki frequency store karega (ASCII values ke liye 128 size).
-      * `wFq = new int[128]`: Current window of `s` ke characters ki frequency store karega.
-      * `t` ke characters ki frequency `tFq` mein bharo.
-
-3.  **Variables Initialize Karein:**
-
-      * `left = 0, right = 0`: Window pointers.
-      * `formed = 0`: Kitne `t` characters window mein successfully match ho gaye hain (counts ke saath).
-      * `required = t.length()`: `t` mein total characters (duplicates sahit) jinko match karna hai.
-      * `minLength = Integer.MAX_VALUE`: Sabse choti window ki current length.
-      * `minStart = 0`: Sabse choti window ka starting index.
-
-4.  **Window Expand Karein (`right` pointer se):**
-
-      * `while (right < s.length())` loop chalao.
-      * Current character `ch = s.charAt(right)` lo.
-      * `wFq[ch]++`: `ch` ko `windowFreq` mein add karo.
-      * **`formed` Update Karein:**
-          * `if (tFq[ch] > 0 && wFq[ch] <= tFq[ch]) formed++;`
-          * Iska matlab hai ki agar `ch` `t` mein required tha, aur uski current count `t` mein uski required count se zyada nahi hui hai, toh `formed` count badha do.
-
-5.  **Window Shrink Karein (`left` pointer se) jab tak `formed == required` hai:**
-
-      * `while (formed == required)` loop chalao.
-      * **Min Window Update Karein:**
-          * `if (right - left + 1 < minLength)`: Agar current window ki length `minLength` se choti hai, toh update karo `minLength` aur `minStart`.
-      * **Character Remove Karein from Left:**
-          * `char leftChar = s.charAt(left);`
-          * `wFq[leftChar]--`: `leftChar` ki frequency `windowFreq` mein kam karo.
-          * **`formed` Update Karein (agar window invalid hoti hai):**
-              * `if (tFq[leftChar] > 0 && wFq[leftChar] < tFq[leftChar]) formed--;`
-              * Iska matlab hai ki agar `leftChar` `t` mein required tha, aur usko remove karne ke baad uski count `t` ki required count se kam ho gayi, toh `formed` count kam karo (window ab valid nahi rahi).
-      * `left++`: `left` pointer ko aage badhao.
-
-6.  **`right++`:** `right` pointer ko har bar aage badhao.
-
-7.  **Result Return Karein:**
-
-      * Agar `minLength` `Integer.MAX_VALUE` hi raha, matlab koi valid window nahi mili. `""` return karo.
-      * Warna, `s.substring(minStart, minStart + minLength)` return karo.
-
------
-
-### **Java Solution with Comments:**
-
-```java
-class Solution {
-    public String minWindow(String s, String t) {
-        // Edge cases handle karo: agar s t se chota hai, ya t/s khaali hain
-        if (s.length() < t.length() || t.length() == 0 || s.length() == 0) return "";
-
-        // Characters ki frequency store karne ke liye arrays (ASCII characters ke liye 128 size)
-        int[] tFq = new int[128]; // 't' mein characters ki frequency
-        int[] wFq = new int[128]; // Current window 's' mein characters ki frequency
-
-        // 't' ke characters ki frequency 'tFq' mein bharo
-        for (int i = 0; i < t.length(); i++) {
-            tFq[t.charAt(i)]++;
-        }
-
-        int left = 0, right = 0;             // Window ke pointers
-        int formed = 0;                      // Kitne 't' characters (counts ke saath) window mein match ho gaye hain
-        int required = t.length();           // Total characters (duplicates sahit) jinhe match karna hai 't' mein
-
-        int minLength = Integer.MAX_VALUE;   // Sabse choti window ki current length
-        int minStart = 0;                    // Sabse choti valid window ka starting index
-
-        // Window ko 'right' pointer se expand karo
-        while (right < s.length()) {
-            char ch = s.charAt(right); // Current character jahan 'right' pointer hai
-            wFq[ch]++; // Current character ko window frequency mein add karo
-
-            // Agar yeh character 't' mein required tha AND uski count abhi bhi 't' mein uski required count se zyada nahi hui hai
-            if (tFq[ch] > 0 && wFq[ch] <= tFq[ch]) {
-                formed++; // Toh 'formed' count badha do
-            }
-
-            // Window ko 'left' pointer se shrink karne ki koshish karo jab tak window valid hai (formed == required)
-            while (formed == required) {
-                // Agar current window pichli 'minLength' se choti hai, toh update karo
-                if (right - left + 1 < minLength) {
-                    minLength = right - left + 1;
-                    minStart = left; // Sabse choti window ka starting index store karo
-                }
-
-                // Window ke left se character hatao
-                char leftChar = s.charAt(left);
-                wFq[leftChar]--; // 'leftChar' ki frequency window se kam karo
-
-                // Agar 'leftChar' 't' mein required tha AND usko remove karne ke baad uski count 't' ki required count se kam ho gayi
-                if (tFq[leftChar] > 0 && wFq[leftChar] < tFq[leftChar]) {
-                    formed--; // Toh 'formed' count kam karo (window ab valid nahi rahi)
-                }
-
-                left++; // Left pointer ko aage badhao (window ko shrink karo)
-            }
-
-            right++; // Right pointer ko aage badhao (window ko expand karo)
-        }
-
-        // Result return karo: agar koi valid window nahi mili (minLength MAX_VALUE hi raha), toh "" return karo
-        // Warna, 's' ki substring return karo 'minStart' se 'minStart + minLength' tak
-        return minLength == Integer.MAX_VALUE ? "" : s.substring(minStart, minStart + minLength);
-    }
-}
-```
-
------
-
-## 🔹 **Problem: Sliding Window Maximum**
-
-Aapko ek integer array `nums` aur ek integer `k` diya gaya hai.
-Ek **sliding window** hai jiska size `k` hai, aur woh array mein left se right move kar rahi hai.
-Har step par, aapko **window mein maximum value** return karni hai.
-
-### ✅ **Example**
-
-**Input:**
-`nums = [1,3,-1,-3,5,3,6,7]`, `k = 3`
-
-**Output:**
-`[3,3,5,5,6,7]`
-
-**Explanation:**
-Hum 3 size ki window slide karte hain aur max value lete hain:
-
-```
-[1   3  -1] -3   5   3   6   7 → max = 3
- 1  [3  -1  -3]  5   3   6   7 → max = 3
- 1   3  [-1  -3  5]  3   6   7 → max = 5
- 1   3  -1  [-3  5  3]  6   7 → max = 5
- 1   3  -1  -3  [5  3  6]  7 → max = 6
- 1   3  -1  -3   5  [3  6  7] → max = 7
-```
-
------
-
-### 💡 **Approach: Monotonic Queue (Deque)**
-
-Yeh problem simple sliding window se thoda trickier hai kyunki hamein har baar window ka maximum chahiye. Agar hum har baar window ko iterate karein, toh yeh slow ho jayega. Iske liye hum ek special data structure use karte hain jise **Monotonic Deque (Double-Ended Queue)** kehte hain.
-
-  * **Deque (Double-Ended Queue) kya hai?** Yeh ek queue hai jismein elements ko dono sides (front aur back) se add aur remove kiya ja sakta hai.
-  * **Monotonic Deque kya hai?** Hum is deque mein **indices** store karenge, lekin is tarah se ki deque ke andar ke elements (un indices par `nums` ki values) hamesha **decreasing order** mein rahen.
-  * **Front ka matlab:** Deque ke **front** par hamesha **current window ke maximum element ka index** hoga.
-  * **Naye index ko add karne se pehle, yeh elements remove karo:**
-      * Woh indices jo current **window se bahar** ho gaye hain (left side se).
-      * Woh indices jinki values **current number se choti** hain (deque ke back se), kyunki agar naya number bada hai, toh purana chota number kabhi max nahi banega jab tak yeh bada number window mein hai.
-
------
-
-### **Approach (Tareeka):**
-
-1.  **Variables Initialize Karein:**
-
-      * `ans = new int[nums.length - k + 1]`: Result array jismein har window ka max store hoga.
-      * `j = 0`: `ans` array ka index.
-      * `Deque<Integer> q = new LinkedList<>()`: Monotonic deque (indices store karega).
-
-2.  **Array Iterate Karein (`i` pointer se):**
-
-      * `for (int i = 0; i < nums.length; i++)` loop chalao.
-      * **Deque Cleanup (Left Side):**
-          * `if (!q.isEmpty() && q.peekFirst() < i - k + 1)`: Agar deque khaali nahi hai aur deque ke front par jo index hai woh current window ki left boundary (`i - k + 1`) se chota hai, toh us index ko deque ke front se `pollFirst()` karke remove kar do (kyunki woh window se bahar ho gaya).
-      * **Deque Cleanup (Right Side / Monotonicity):**
-          * `while (!q.isEmpty() && nums[i] > nums[q.peekLast()])`: Jab tak deque khaali nahi hai aur current number `nums[i]` deque ke back par stored index ki value (`nums[q.peekLast()]`) se bada hai, tab tak deque ke back se `pollLast()` karke elements remove karte raho. (Kyunki agar `nums[i]` bada hai, toh woh pichle chote elements ko future max banne se rok dega).
-      * **Add Current Index:**
-          * `q.offerLast(i)`: Current index `i` ko deque ke back par add kar do.
-
-3.  **Result Record Karein:**
-
-      * `if (i >= k - 1)`: Jab `i` `k-1` ke barabar ya usse bada ho jaye (matlab jab window mein `k` elements aa jayen), tab:
-          * `ans[j++] = nums[q.peekFirst()]`: Deque ke front par jo index hai, us par `nums` ki value hi current window ka maximum hogi. Use `ans` array mein store kar do.
-
-4.  **Return:** `ans` array return kar do.
-
------
-
-### 🔧 **Code (Java) with Comments:**
-
-```java
-import java.util.Deque; // Deque interface ko import karo
-import java.util.LinkedList; // LinkedList jo Deque interface ko implement karta hai
-
-class Solution {
-    public int[] maxSlidingWindow(int[] nums, int k) {
-        // Result array banaya jismein har window ka maximum store hoga.
-        // Total windows hongi: nums.length - k + 1
-        int[] ans = new int[nums.length - k + 1];
-        int j = 0; // 'ans' array mein elements dalne ke liye index
-
-        // Monotonic Deque banaya jo indices ko store karega
-        // Deque ke front par hamesha current window ka max element ka index hoga.
-        // Elements decreasing order of values mein honge from front to back.
-        Deque<Integer> q = new LinkedList<>();
-
-        // Array par iterate karo 'i' (right pointer) se
-        for (int i = 0; i < nums.length; i++) {
-            // Step 1: Deque ke front se un indices ko hatao jo ab current window se bahar ho gaye hain.
-            // Current window ki left boundary hai: i - k + 1
-            if (!q.isEmpty() && q.peekFirst() < i - k + 1) {
-                q.pollFirst(); // Front se element hatao
-            }
-
-            // Step 2: Deque ke back se un indices ko hatao jinki value current element (nums[i]) se choti hai.
-            // Kyunki nums[i] bada hai, toh yeh chote elements kabhi max nahi ban payenge jab tak nums[i] window mein hai.
-            while (!q.isEmpty() && nums[i] > nums[q.peekLast()]) {
-                q.pollLast(); // Back se element hatao
-            }
-
-            // Step 3: Current element ka index deque ke back par add karo.
-            q.offerLast(i);
-
-            // Step 4: Jab window size 'k' tak pahunch jaye (yaani i >= k - 1),
-            // tab current window ka maximum (jo deque ke front par hai) ko result array mein store karo.
-            if (i >= k - 1) {
-                ans[j++] = nums[q.peekFirst()];
-            }
-        }
-
-        return ans; // Final result array return karo
-    }
-}
-```
-
------
-
-### 🧠 **Time & Space Complexity**
-
-  * **Time Complexity:** `O(n)` — Har element deque mein zyada se zyada ek baar add hota hai aur ek baar remove hota hai. Isliye total operations `2*n` ke order mein hote hain.
-  * **Space Complexity:** `O(k)` — Deque mein zyada se zyada `k` elements (indices) store hote hain.
-
------
