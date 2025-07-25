@@ -2,7 +2,7 @@
 
 Competitive Programming mein, aapke code ki **Time Complexity** (samay ki jatilta) bahut important hoti hai. Agar aapka solution given Time Limit ke andar nahi chala, toh aapko **TLE** mil jayega, yaani **Time Limit Exceeded**. Isliye, yeh samajhna bahut zaroori hai ki kis input size ke liye kaun si time complexity acceptable hai.
 
-### ⏱ **General Rule of Thumb (Mota-Mota Hisaab)**
+### **General Rule of Thumb (Mota-Mota Hisaab)**
 
 Yeh ek general guide hai ki 1 second ke time limit mein aap kitne operations expect kar sakte hain:
 
