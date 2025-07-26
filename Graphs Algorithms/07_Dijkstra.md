@@ -553,3 +553,148 @@ public class MinCostPathGrid {
   * **Greedy Approach:** Har step par, algorithm locally optimal choice (smallest distance node) choose karta hai, jo eventually globally optimal solution (shortest path) deta hai.
   * **Graph Representation:** Adjacency list use karna recommended hai graphs ko represent karne ke liye, especially for sparse graphs (`E << V^2`).
   * **Variations:** Dijkstra's ko kayi variations mein apply kiya ja sakta hai, jaise grid problems, network routing, etc., jahan shortest/minimum path/cost find karna ho.
+-------
+-----
+
+# Dijkstra's Algorithm vs. BFS (Using a Queue)
+
+### Dijkstra's Algorithm (with Priority Queue):
+
+  * **Purpose:** Shortest path in **weighted graphs** (non-negative weights).
+  * **Key Idea:** Hamesha next **shortest-distance** wale unvisited node ko pick karta hai.
+  * **Data Structure:** **`PriorityQueue`** (min-heap) use karta hai taaki sabse kam distance wala node hamesha top par rahe. Yehi reason hai ki Dijkstra weighted graphs mein kaam karta hai.
+  * **Guaranteed Shortest Path:** Yes, because it always explores the closest unvisited node first.
+
+### BFS (Breadth-First Search) (with a simple Queue):
+
+  * **Purpose:** Shortest path in **unweighted graphs** (yaani sab edges ka weight 1 ho).
+  * **Key Idea:** Level by level graph ko explore karta hai. Source node se sabse pehle 1 edge door wale nodes, phir 2 edge door wale, aur aise hi.
+  * **Data Structure:** **`Queue`** (FIFO) use karta hai. Queue mein jo node pehle aata hai, woh pehle process hota hai, regardless of its "actual" distance in a weighted graph.
+  * **Guaranteed Shortest Path:** Yes, but **only if all edge weights are equal (e.g., 1)**.
+
+-----
+
+### Kyun Simple Queue Dijkstra Ke Liye Kaam Nahi Karti (Weighted Graph Mein)?
+
+Imagine kijiye aapke paas ek graph hai:
+
+`Start (A) --1--> B --10--> End (C)`
+`Start (A) --5--> C`
+
+Agar aap simple `Queue` use karenge, toh process kuch aisa hoga:
+
+1.  **Queue: `[ (A, dist=0) ]`**
+2.  `A` ko dequeue kiya। `A` ke neighbors:
+      * `B` ko update kiya `dist[B]=1`। **Queue: `[ (B, dist=1) ]`**
+      * `C` ko update kiya `dist[C]=5`। **Queue: `[ (B, dist=1), (C, dist=5) ]`**
+3.  `B` ko dequeue kiya (kyunki woh Queue mein pehle aaya tha)। `B` ke neighbors:
+      * `C` tak pahunchne ka naya rasta `A -> B -> C` (dist = `1 + 10 = 11`)।
+      * Lekin `dist[C]` toh already `5` hai (`A -> C` raste se). Ab yahan confusion ho jayegi. Agar hum `dist[C]` ko `11` se update kar dete hain, toh yeh galat ho jayega, kyunki `A -> C` (dist=5) chhota rasta tha. Agar update nahi karte, toh bhi decision making mein problem.
+      * Main problem ye hai ki Queue ne `B` ko `C` se pehle process kiya, bhale hi `C` ka direct path (`A -> C`) `B` tak ke path se zyada chhota ho sakta tha.
+
+**Priority Queue mein kya hota:**
+
+1.  **PQ: `[ (A, dist=0) ]`**
+2.  `A` ko poll kiya। `A` ke neighbors:
+      * `B` ko update kiya `dist[B]=1`। **PQ: `[ (B, dist=1) ]`**
+      * `C` ko update kiya `dist[C]=5`। **PQ: `[ (B, dist=1), (C, dist=5) ]`**
+3.  Ab `PQ` se **`B`** poll hoga (kyunki uska distance 1 hai jo `C` ke 5 se kam hai)। `B` ke neighbors:
+      * `C` tak pahunchne ka naya rasta `A -> B -> C` (dist = `1 + 10 = 11`)।
+      * `if (dist[u] + w < dist[v])` check hoga: `if (1 + 10 < 5)` jo ki `false` hai (`11 < 5` is false)। Toh `dist[C]` update nahi hoga. `C` ka shortest distance `5` hi rahega, jo ki correct hai.
+4.  Phir `PQ` se **`C`** poll hoga। `C` ke neighbors ko process karega.
+
+Yeh clear karta hai ki `PriorityQueue` ka use karna `Dijkstra's Algorithm` mein kyun zaroori hai, taaki hum hamesha current smallest known distance wale node ko explore karein, na ki simply jo pehle queue mein aaya hai.
+
+-----
+
+### BFS Algorithm Ka Code (Using a Simple Queue)
+
+Agar aapko unweighted graph mein shortest path nikalna hai, toh aap BFS use kar sakte hain:
+
+```java
+import java.util.*;
+
+public class BFSShortestPath {
+
+    private List<List<Integer>> graph; // Adjacency list for unweighted graph
+    private int numNodes;
+
+    public BFSShortestPath(int numNodes) {
+        this.numNodes = numNodes;
+        graph = new ArrayList<>(numNodes);
+        for (int i = 0; i < numNodes; i++) {
+            graph.add(new ArrayList<>());
+        }
+    }
+
+    public void addEdge(int u, int v) {
+        graph.get(u).add(v);
+        // For undirected graph, add: graph.get(v).add(u);
+    }
+
+    public int[] bfs(int startNode) {
+        int[] dist = new int[numNodes];
+        Arrays.fill(dist, -1); // -1 means unvisited/unreachable
+
+        Queue<Integer> queue = new LinkedList<>(); // Simple Queue
+
+        dist[startNode] = 0; // Source node ka distance 0
+        queue.add(startNode);
+
+        while (!queue.isEmpty()) {
+            int u = queue.poll();
+
+            for (int v : graph.get(u)) { // Explore neighbors
+                if (dist[v] == -1) { // Agar neighbor visit nahi hua hai
+                    dist[v] = dist[u] + 1; // Distance update karo (har edge ka weight 1 hai)
+                    queue.add(v); // Queue mein add karo
+                }
+            }
+        }
+        return dist; // Sab nodes tak ka shortest distance array
+    }
+
+    public static void main(String[] args) {
+        // Example Unweighted Graph: 0-based indexing (0 to 5)
+        // 0 --- 1
+        // | \   |
+        // 2   3 --- 4
+        //     |
+        //     5
+
+        BFSShortestPath bfsGraph = new BFSShortestPath(6);
+        bfsGraph.addEdge(0, 1);
+        bfsGraph.addEdge(0, 2);
+        bfsGraph.addEdge(0, 3);
+        bfsGraph.addEdge(1, 4);
+        bfsGraph.addEdge(3, 4);
+        bfsGraph.addEdge(3, 5);
+
+        int startNode = 0;
+        int[] shortestDistances = bfsGraph.bfs(startNode);
+
+        System.out.println("Shortest distances from Node " + startNode + " (BFS):");
+        for (int i = 0; i < shortestDistances.length; i++) {
+            System.out.println("Node " + i + ": " + shortestDistances[i]);
+        }
+        /* Output:
+        Shortest distances from Node 0 (BFS):
+        Node 0: 0
+        Node 1: 1
+        Node 2: 1
+        Node 3: 1
+        Node 4: 2
+        Node 5: 2
+        */
+    }
+}
+```
+
+-----
+
+### Conclusion:
+
+  * **Weighted Graph + Shortest Path = Dijkstra (with Priority Queue)**
+  * **Unweighted Graph + Shortest Path = BFS (with simple Queue)**
+
+Agar aap Dijkstra's Algorithm ki baat kar rahe hain, toh **Priority Queue** uska core component hai. Simple `Queue` ke saath woh BFS ban jaata hai aur weighted graphs mein shortest path correctly calculate nahi kar pata.
