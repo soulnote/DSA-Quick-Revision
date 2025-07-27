@@ -218,135 +218,200 @@ Merge Sort un situations ke liye best hai jahan **stability** (equal elements ka
 
 -----
 
-## Heap Sort
+# Heap Sort
+## Heap Sort Kya Hai?
 
-Heap Sort ek comparison-based sorting algorithm hai jo **Binary Heap data structure** ka use karta hai. Yeh ek efficient, **in-place** sorting algorithm hai jiski **time complexity worst case mein bhi $O(n \\log n)$** rehti hai. Heap Sort do main steps mein kaam karta hai:
+Heap Sort ek efficient sorting algorithm hai jo do main steps mein kaam karta hai:
 
-1.  **Build a Max-Heap**: Diye gaye array ko ek Max-Heap mein convert karna. Max-Heap mein, parent node ki value uske children nodes se hamesha badi ya barabar hoti hai.
-2.  **Extract Elements**: Heap ke root (jo ki largest element hota hai Max-Heap mein) ko baar-baar extract karna aur use array ke end mein place karna, aur bache hue heap ko phir se adjust karna (heapify).
+1.  **Build a Max-Heap:** Diye gaye array ko ek **Max-Heap** mein convert karna. Max-Heap ek special type ka binary tree hota hai jahan har parent node ki value uske children nodes se hamesha badi ya barabar hoti hai. Isse yeh ensure hota hai ki root node (array ka pehla element) hamesha sabse bada element hoga.
+
+2.  **Extract Elements and Sort:** Max-Heap banne ke baad, hum root element (jo ki sabse bada element hai) ko array ke last element se swap karte hain. Phir, heap ka size ek se kam karte hain aur bache hue heap ko fir se Max-Heap banate hain (`heapify` operation). Is process ko tab tak repeat karte hain jab tak saare elements sort na ho jayein.
+
+**Analogy:**
+Imagine kijiye aapke paas kuch books hain aur aapko unhe height ke hisaab se line mein lagana hai.
+
+  * **Step 1 (Build Max-Heap):** Aap un books ko ek aise stack mein jama karte hain jahan har parent book apne neeche wali books se lambi ho. Is tarah se, sabse upar wali book hamesha sabse lambi hogi.
+  * **Step 2 (Extract and Sort):** Aap sabse upar wali (sabse lambi) book ko nikal kar line ke end mein rakh dete hain. Ab bache hue stack ko fir se theek karte hain (taki sabse upar phir sabse lambi book aa jaye). Is process ko tab tak repeat karte hain jab tak saari books line mein na lag jayein.
+
+-----
+
+## Binary Heap Data Structure
+
+Heap Sort ko samajhne ke liye **Binary Heap** ko samajhna zaroori hai. Binary Heap ek **complete binary tree** hota hai (matlab saare levels filled hain, last level left se right filled hai) jo array ke form mein store hota hai.
+
+Do tarah ke Binary Heaps hote hain:
+
+1.  **Max-Heap:** Har parent node ki value uske children nodes se greater than or equal to hoti hai.
+
+      * `parent >= child`
+      * Root node hamesha sabse bada element hota hai.
+
+2.  **Min-Heap:** Har parent node ki value uske children nodes se less than or equal to hoti hai.
+
+      * `parent <= child`
+      * Root node hamesha sabse chhota element hota hai.
+
+Heap Sort mein hum **Max-Heap** ka use karte hain.
+
+**Array representation mein relationships:**
+Agar ek node `i` index par hai:
+
+  * Uska **left child** `2*i + 1` par hoga.
+  * Uska **right child** `2*i + 2` par hoga.
+  * Uska **parent** `(i-1) / 2` par hoga (integer division).
+
+-----
+
+## Heap Sort Algorithm Ke Steps Detail Mein
+
+Maante hain ki humein ek array `arr` ko ascending order mein sort karna hai.
+
+### Phase 1: Build Max-Heap
+
+Is phase mein, hum diye gaye array ko ek Max-Heap mein convert karte hain. Yeh bottom-up approach se kiya jaata hai.
+
+1.  Array ke **last non-leaf node** se shuru karte hain aur root node tak peeche jaate hain.
+      * Last non-leaf node ka index `(n/2) - 1` hota hai, jahan `n` array ka size hai.
+2.  Har non-leaf node `i` ke liye, `heapify()` operation perform karte hain.
+      * `heapify()` ek function hai jo guarantee karta hai ki `i` index par jo node hai aur uske children, woh Max-Heap property satisfy karein. Agar nahi karte, toh `i` ko uske largest child se swap karta hai aur recursively child par `heapify` call karta hai.
+
+### `heapify()` Function Ka Logic:
+
+`heapify(arr, n, i)`: (jahan `n` heap ka current size hai, aur `i` woh index hai jise heapify karna hai)
+
+1.  `largest = i` set karo (maano current node hi largest hai).
+2.  `left_child = 2*i + 1` aur `right_child = 2*i + 2` calculate karo.
+3.  Agar `left_child` `n` se chhota hai (matlab child exist karta hai) aur `arr[left_child]` `arr[largest]` se bada hai, toh `largest = left_child`.
+4.  Agar `right_child` `n` se chhota hai (matlab child exist karta hai) aur `arr[right_child]` `arr[largest]` se bada hai, toh `largest = right_child`.
+5.  Agar `largest` ab bhi `i` ke barabar nahi hai (matlab `i` ka koi child usse bada nikla), toh `arr[i]` aur `arr[largest]` ko swap karo.
+6.  Ab recursively `heapify` ko `arr, n, largest` par call karo, kyunki swap karne se largest child ki sub-tree ki heap property disturb ho sakti hai.
+
+### Phase 2: Extract Elements and Sort
+
+Max-Heap banne ke baad, root element (`arr[0]`) sabse bada hota hai. Hum isse nikal kar array ke end mein place karte hain.
+
+1.  `n-1` se `0` tak loop chalao (yaani array ke last index se shuru karke pehle index tak). `i` current last element ka index hoga.
+2.  `arr[0]` (root, largest element) ko `arr[i]` (last element) se swap karo.
+3.  Heap ka size ek se kam karo (`n` ko `i` tak reduce karo).
+4.  Ab naya root (`arr[0]`, jo pehle `arr[i]` tha) shayad Max-Heap property satisfy na kare. Isliye, `arr` par `heapify(arr, i, 0)` call karo. Ye `arr[0]` ko uski sahi position par le aayega aur baki bache hue elements mein se sabse bade ko root bana dega.
+
+Jab loop khatam hoga, toh array sorted ho jayega.
+
+-----
+
+## Heap Sort Ka Java Code Example
 
 ```java
-public class HeapSortHinglish {
+public class HeapSort {
 
-    // Main heapSort method jo array leta hai
-    public static void heapSort(int[] arr) {
+    // Main sorting function
+    public void sort(int arr[]) {
         int n = arr.length;
 
-        // Step 1: Array ko Max-Heap mein convert karo (Build Max-Heap)
-        // Hum non-leaf nodes se shuru karte hain aur upar root tak jaate hain
-        // Last non-leaf node ka index n/2 - 1 hota hai
+        // Phase 1: Build Max-Heap (array ko heapify karo)
+        // Last non-leaf node se shuru karte hain aur upar root tak jaate hain
         for (int i = n / 2 - 1; i >= 0; i--) {
             heapify(arr, n, i);
         }
 
-        // Step 2: Ek-ek karke elements ko heap se extract karo
+        // Phase 2: Extract elements one by one from heap
         for (int i = n - 1; i > 0; i--) {
-            // Current root (largest element) ko last element ke saath swap karo
+            // Current root (largest element) ko last element se swap karo
             int temp = arr[0];
             arr[0] = arr[i];
             arr[i] = temp;
 
-            // Chhote hue heap par heapify call karo
-            // Current heap size i hai
+            // Chhote hue heap (n-1 size) par heapify operation perform karo
+            // Root (0 index) ko uski sahi position par laao
             heapify(arr, i, 0);
         }
     }
 
-    // Heapify method: Yeh ek sub-tree ko heap property maintain karne ke liye adjust karta hai
-    // n: heap ka size
-    // i: root node ka index jahan se heapify shuru karna hai
-    public static void heapify(int[] arr, int n, int i) {
-        int largest = i; // Sabse bade element ko root man lo
+    // Function to heapify a subtree rooted with node i
+    // n is size of heap
+    void heapify(int arr[], int n, int i) {
+        int largest = i; // Root ko largest element maano
         int left = 2 * i + 1; // Left child ka index
         int right = 2 * i + 2; // Right child ka index
 
-        // Agar left child largest se bada hai
+        // Agar left child exist karta hai aur root se bada hai
         if (left < n && arr[left] > arr[largest]) {
             largest = left;
         }
 
-        // Agar right child (ab naye) largest se bada hai
+        // Agar right child exist karta hai aur ab tak ke largest se bada hai
         if (right < n && arr[right] > arr[largest]) {
             largest = right;
         }
 
-        // Agar largest, root (i) nahi hai
+        // Agar largest root nahi hai (matlab koi child bada nikla)
         if (largest != i) {
-            // Largest element ko current root ke saath swap karo
+            // Swap karo root ko largest child se
             int swap = arr[i];
             arr[i] = arr[largest];
             arr[largest] = swap;
 
-            // Recursively affected sub-tree par heapify call karo
+            // Recursively heapify karo affected sub-tree ko
             heapify(arr, n, largest);
         }
+    }
+
+    // Utility function to print array (for testing)
+    static void printArray(int arr[]) {
+        int n = arr.length;
+        for (int i = 0; i < n; ++i)
+            System.out.print(arr[i] + " ");
+        System.out.println();
+    }
+
+    // Main method to test
+    public static void main(String args[]) {
+        int arr[] = {12, 11, 13, 5, 6, 7};
+        System.out.println("Original array:");
+        printArray(arr);
+
+        HeapSort hs = new HeapSort();
+        hs.sort(arr);
+
+        System.out.println("Sorted array (using Heap Sort):");
+        printArray(arr);
+
+        int arr2[] = {4, 10, 3, 5, 1};
+        System.out.println("\nOriginal array 2:");
+        printArray(arr2);
+        hs.sort(arr2);
+        System.out.println("Sorted array 2 (using Heap Sort):");
+        printArray(arr2);
     }
 }
 ```
 
-### Code Explanation (Hinglish Mein):
+-----
 
-1.  **`heapSort(int[] arr)`**:
+## Heap Sort Ki Complexity
 
-      * Yeh main method hai jo array ko sort karta hai.
-      * **`n = arr.length;`**: Array ka total size store karta hai.
-      * **Step 1: Build Max-Heap**:
-          * `for (int i = n / 2 - 1; i >= 0; i--)`: Yeh loop array ko Max-Heap mein convert karta hai.
-          * `n/2 - 1` **first non-leaf node** ka index hota hai. Hum last non-leaf node se shuru karte hain aur backwards (`i--`) root (`0`) tak jaate hain.
-          * Har non-leaf node par **`heapify`** function call kiya jata hai taaki us node ke subtree ko heap property maintain karne ke liye adjust kiya ja sake.
-          * Is step ke baad, `arr[0]` (root) sabse bada element hoga.
-      * **Step 2: Extract Elements and Sort**:
-          * `for (int i = n - 1; i > 0; i--)`: Yeh loop sorted elements ko array ke end mein place karta hai.
-          * **Swap**: Current largest element (jo `arr[0]` par hai) ko array ke **last unsorted element** (`arr[i]`) ke saath swap kiya jata hai. Isse largest element apni sahi sorted position par aa jata hai.
-          * **`heapify(arr, i, 0)`**: Swap karne ke baad, heap ka size 1 se kam ho jata hai (`i` naya size hai), aur naya `arr[0]` galat position par ho sakta hai. Isliye, bache hue heap (size `i`) par `heapify` call kiya jata hai, `0` se shuru karte hue, taaki heap property phir se maintain ho sake.
+  * **Time Complexity:**
 
-2.  **`heapify(int[] arr, int n, int i)`**:
+      * **Building the Max-Heap:** `O(n)` (This is a complex derivation, but it boils down to `O(n)`).
+      * **Extracting elements and Heapifying:** Har `heapify` operation `O(log n)` time leti hai, aur hum ise `n-1` baar karte hain. Toh ye `O(n log n)` hua.
+      * **Overall Time Complexity:** `O(n log n)`. Yeh average aur worst case dono ke liye true hai, jo isse Quicksort (worst-case `O(n^2)`) se zyada consistent banata hai.
 
-      * Yeh helper function ek subtree ko Max-Heap property maintain karne ke liye adjust karta hai, jiska root `i` index par hai aur total heap size `n` hai.
-      * **`largest = i`**: Initially, hum current node `i` ko hi largest मान लेते hain.
-      * **`left = 2 * i + 1`** aur **`right = 2 * i + 2`**: Binary heap mein, left child ka index `2i + 1` aur right child ka index `2i + 2` hota hai.
-      * **Comparisons**:
-          * `if (left < n && arr[left] > arr[largest])`: Check karta hai ki left child heap boundary ke andar hai aur root se bada hai. Agar haan, toh `largest` ko left child ka index bana deta hai.
-          * `if (right < n && arr[right] > arr[largest])`: Same check right child ke liye.
-      * **Swap and Recurse**:
-          * `if (largest != i)`: Agar `largest` abhi bhi `i` nahi hai (matlab, koi child `i` se bada nikla), toh `arr[i]` aur `arr[largest]` ko **swap** kiya jata hai.
-          * `heapify(arr, n, largest)`: Swap ke baad, affected subtree par recursively `heapify` call kiya jata hai taaki heap property poore subtree mein maintain ho sake.
-
-
-### Time aur Space Complexity (Hinglish Mein):
-
-Heap Sort ki time aur space complexity is tarah hai:
-
-### 1\. Time Complexity (Samay Lagne Wali Complexity)
-
-  * **Best Case Time Complexity: $O(n \\log n)$**
-  * **Average Case Time Complexity: $O(n \\log n)$**
-  * **Worst Case Time Complexity: $O(n \\log n)$**
-
-**Explanation**:
-
-  * **Building the Heap**: Array ko Max-Heap mein convert karne mein $O(n)$ time lagta hai. Although loop $n$ times chalta hai, `heapify` function ki complexity height (`log n`) par depend karti hai, aur har node ke liye heapify call nahi hota. Poore heap ko build karne ki cumulative complexity $O(n)$ hoti hai.
-  * **Extracting Elements**: `n-1` elements ko extract kiya jata hai. Har extraction operation mein (root ko swap karna aur phir `heapify` call karna) $O(\\log n)$ time lagta hai. Isliye, $n$ elements ke liye $n \\times O(\\log n) = O(n \\log n)$ time lagta hai.
-  * Dono steps ko mila kar, Heap Sort ki total time complexity $O(n \\log n)$ hoti hai. Yeh iski sabse badi khaasiyat hai ki yeh **worst case mein bhi $O(n \\log n)$ performance guarantee karta hai**, Quicksort ke vipreet jo worst case mein $O(n^2)$ ho sakta hai.
-
-### 2\. Space Complexity (Jagah Lagne Wali Complexity)
-
-  * **Space Complexity: $O(1)$**
-
-**Explanation**:
-
-  * Heap Sort ek **in-place sorting algorithm** hai. Iska matlab hai ki sorting ke liye ise **bahut kam (constant) extra memory** ki zaroorat padti hai, jo ki input array ke size par depend nahi karta.
-  * `heapify` function recursive hai, lekin stack space ki zaroorat $O(\\log n)$ hoti hai, jo ki constant space mein consider ki jaati hai agar input size bohot bada na ho. Technically, $O(1)$ auxiliary space tab hota hai jab recursion stack ko ignore kiya jaye ya iterative version use kiya jaye. Lekin, competitive programming mein $O(\\log n)$ recursion stack space ko bhi $O(1)$ mana jata hai, especially comparison with $O(N)$ space algorithms like Merge Sort.
-
-### Summary Table (Saraansh):
-
-| Complexity Type     | Best Case           | Average Case        | Worst Case          |
-| :------------------ | :------------------ | :------------------ | :------------------ |
-| **Time Complexity** | $O(n \\log n)$       | $O(n \\log n)$       | $O(n \\log n)$       |
-| **Space Complexity**| $O(1)$              | $O(1)$              | $O(1)$              |
+  * **Space Complexity:** `O(1)` (In-place). Heap ko array mein hi store karte hain aur bahut kam auxiliary space use hota hai recursion stack ke liye (jo `O(log n)` ho sakta hai worst case mein).
 
 -----
 
-**Jab use karna chahiye?**
-Heap Sort un situations ke liye behtar hai jahan **guaranteed $O(n \\log n)$ time complexity** aur **$O(1)$ auxiliary space** dono important ho. Yeh Quicksort ki tarah fast nahi hota average case mein, lekin iski worst-case performance consistent hoti hai, jo ise real-time systems aur embedded environments ke liye ek accha option banati hai.
+## Heap Sort Ke Fayde Aur Nuksan
 
+**Fayde (Advantages):**
+
+1.  **Guaranteed O(n log n):** Iski worst-case time complexity bhi `O(n log n)` hai, jo Quick Sort se better hai worst-case scenarios mein.
+2.  **In-place Sorting:** Isse bahut kam extra memory ki zaroorat padti hai.
+3.  **Reliable:** Iski performance input data ke order par zyada depend nahi karti.
+
+**Nuksan (Disadvantages):**
+
+1.  **Not Stable:** Agar array mein identical elements hain, toh unka relative order sort hone ke baad preserve nahi hota.
+2.  **Cache Performance:** Iski cache performance Quick Sort ya Merge Sort jitni achhi nahi hoti, kyunki heap ek tree structure hai jo array mein scattered ho sakti hai, jisse memory access patterns random ho sakte hain.
+3.  **Complex Implementation:** Compared to simpler sorts like Insertion or Selection sort, iska implementation thoda zyada complex lag sakta hai.
+
+Heap Sort ek bahut hi robust aur efficient algorithm hai, khaas kar jab memory constraints hon aur worst-case performance ki guarantee zaroori ho.
