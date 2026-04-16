@@ -1,7 +1,4 @@
 # Linked List 
-## 📚 Theory + Java Code for All Important Linked List Questions
-
----
 
 ## **Linked List Basics - Theory ()**
 
