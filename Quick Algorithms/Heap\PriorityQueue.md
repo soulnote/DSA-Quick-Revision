@@ -1261,3 +1261,663 @@ Heap sort: O(n log n)
 4. **Two heaps pattern master karo** - Median problems mein bahut useful hai
 
 5. **Lazy removal technique** - Jab heap se delete karna ho to HashMap use karo
+
+
+## Most Asked 20 Hard Heap/Priority Queue Problems in Interview
+
+### 1. Merge k Sorted Lists
+**Problem:** Merge `k` sorted linked lists into one sorted list.
+
+```java
+public ListNode mergeKLists(ListNode[] lists) {
+    PriorityQueue<ListNode> pq = new PriorityQueue<>((a, b) -> a.val - b.val);
+    for (ListNode node : lists) {
+        if (node != null) pq.offer(node);
+    }
+    
+    ListNode dummy = new ListNode(0);
+    ListNode curr = dummy;
+    
+    while (!pq.isEmpty()) {
+        ListNode node = pq.poll();
+        curr.next = node;
+        curr = curr.next;
+        if (node.next != null) pq.offer(node.next);
+    }
+    return dummy.next;
+}
+```
+
+ Saare lists ke first nodes ko heap mein daalo. Heap se sabse chhota node nikaalo, result mein lagao, aur uske next node ko heap mein daalo. Repeat until heap empty.
+
+**Time:** O(N log k) where N = total nodes, k = number of lists
+
+---
+
+### 2. Top K Frequent Elements
+**Problem:** Return k most frequent elements from array.
+
+```java
+public int[] topKFrequent(int[] nums, int k) {
+    Map<Integer, Integer> freq = new HashMap<>();
+    for (int n : nums) freq.put(n, freq.getOrDefault(n, 0) + 1);
+    
+    PriorityQueue<Map.Entry<Integer, Integer>> pq = new PriorityQueue<>(
+        (a, b) -> a.getValue() - b.getValue()  // min-heap by frequency
+    );
+    
+    for (Map.Entry<Integer, Integer> entry : freq.entrySet()) {
+        pq.offer(entry);
+        if (pq.size() > k) pq.poll();
+    }
+    
+    int[] result = new int[k];
+    for (int i = 0; i < k; i++) result[i] = pq.poll().getKey();
+    return result;
+}
+```
+
+ Pehle frequency map banao. Phir ek **min-heap** of size k rakho. Heap mein sirf top k frequent elements hi rahenge. Agar size k se zyada ho jaye toh smallest frequency wala hata do.
+
+---
+
+### 3. Find Median from Data Stream
+**Problem:** Real-time median find karna as numbers add hote rahein.
+
+```java
+class MedianFinder {
+    PriorityQueue<Integer> maxHeap; // left half (smaller numbers)
+    PriorityQueue<Integer> minHeap; // right half (larger numbers)
+    
+    public MedianFinder() {
+        maxHeap = new PriorityQueue<>((a, b) -> b - a);
+        minHeap = new PriorityQueue<>();
+    }
+    
+    public void addNum(int num) {
+        if (maxHeap.isEmpty() || num <= maxHeap.peek()) {
+            maxHeap.offer(num);
+        } else {
+            minHeap.offer(num);
+        }
+        
+        // Balance heaps: maxHeap size should be either equal or 1 more than minHeap
+        if (maxHeap.size() > minHeap.size() + 1) {
+            minHeap.offer(maxHeap.poll());
+        } else if (minHeap.size() > maxHeap.size()) {
+            maxHeap.offer(minHeap.poll());
+        }
+    }
+    
+    public double findMedian() {
+        if (maxHeap.size() > minHeap.size()) {
+            return maxHeap.peek();
+        }
+        return (maxHeap.peek() + minHeap.peek()) / 2.0;
+    }
+}
+```
+
+ Do heaps use karo - ek max-heap (left side) aur ek min-heap (right side). Max-heap ka root left side ka sabse bada hoga, min-heap ka root right side ka sabse chhota. Dono halves balance rakho.
+
+---
+
+### 4. K Closest Points to Origin
+**Problem:** Find k points closest to origin (0,0).
+
+```java
+public int[][] kClosest(int[][] points, int k) {
+    // Max-heap by distance (we want to keep k smallest)
+    PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> 
+        (b[0]*b[0] + b[1]*b[1]) - (a[0]*a[0] + a[1]*a[1])
+    );
+    
+    for (int[] point : points) {
+        pq.offer(point);
+        if (pq.size() > k) pq.poll();
+    }
+    
+    int[][] result = new int[k][2];
+    for (int i = 0; i < k; i++) result[i] = pq.poll();
+    return result;
+}
+```
+
+ Ek **max-heap** of size k rakho. Har point ko daalo, agar size k se zyada ho gaya toh sabse door wala point hata do (kyunki woh top pe hoga max-heap mein).
+
+---
+
+### 5. Meeting Rooms II (Minimum Meeting Rooms)
+**Problem:** Minimum meeting rooms required for given intervals.
+
+```java
+public int minMeetingRooms(int[][] intervals) {
+    if (intervals.length == 0) return 0;
+    
+    Arrays.sort(intervals, (a, b) -> a[0] - b[0]); // sort by start time
+    PriorityQueue<Integer> pq = new PriorityQueue<>(); // min-heap of end times
+    
+    pq.offer(intervals[0][1]);
+    
+    for (int i = 1; i < intervals.length; i++) {
+        if (intervals[i][0] >= pq.peek()) {
+            pq.poll(); // room free ho gaya
+        }
+        pq.offer(intervals[i][1]);
+    }
+    return pq.size();
+}
+```
+
+ Meetings ko start time se sort karo. Min-heap mein end times rakho. Agar next meeting ka start time heap ke top (earliest ending) se bada ya equal hai, toh woh room reuse kar sakte ho. Nahi toh naya room chahiye.
+
+---
+
+### 6. Task Scheduler
+**Problem:** Schedule tasks with cooldown period between same tasks.
+
+```java
+public int leastInterval(char[] tasks, int n) {
+    int[] freq = new int[26];
+    for (char c : tasks) freq[c - 'A']++;
+    
+    PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> b - a);
+    for (int f : freq) {
+        if (f > 0) pq.offer(f);
+    }
+    
+    int time = 0;
+    while (!pq.isEmpty()) {
+        List<Integer> temp = new ArrayList<>();
+        int cycle = n + 1;
+        
+        while (cycle > 0 && !pq.isEmpty()) {
+            int f = pq.poll();
+            if (f > 1) temp.add(f - 1);
+            time++;
+            cycle--;
+        }
+        
+        for (int f : temp) pq.offer(f);
+        if (pq.isEmpty()) break;
+        time += cycle; // idle time
+    }
+    return time;
+}
+```
+
+ Sabse zyada frequency wale task ko pehle schedule karo (max-heap). Ek cycle mein (n+1) unique tasks daal sakte ho. Agar cycle khatam ho jaye aur tasks bachein toh idle time add karo.
+
+---
+
+### 7. Kth Largest Element in an Array
+**Problem:** Find kth largest element.
+
+```java
+public int findKthLargest(int[] nums, int k) {
+    PriorityQueue<Integer> pq = new PriorityQueue<>(); // min-heap
+    
+    for (int num : nums) {
+        pq.offer(num);
+        if (pq.size() > k) pq.poll();
+    }
+    return pq.peek();
+}
+```
+
+ Min-heap of size k maintain karo. Heap mein hamesha k largest elements rahenge. End mein peek kth largest hoga.
+
+---
+
+### 8. Sliding Window Maximum
+**Problem:** Maximum in every sliding window of size k.
+
+```java
+public int[] maxSlidingWindow(int[] nums, int k) {
+    int n = nums.length;
+    int[] result = new int[n - k + 1];
+    // Max-heap: store (value, index)
+    PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> b[0] - a[0]);
+    
+    for (int i = 0; i < n; i++) {
+        pq.offer(new int[]{nums[i], i});
+        
+        // Remove elements outside current window
+        while (pq.peek()[1] <= i - k) pq.poll();
+        
+        if (i >= k - 1) result[i - k + 1] = pq.peek()[0];
+    }
+    return result;
+}
+```
+
+ Max-heap mein (value, index) daalo. Window ke bahar ke indices ko heap se hata do. Top element current window ka maximum hoga.
+
+---
+
+### 9. Reorganize String
+**Problem:** Rearrange string so no two adjacent chars are same.
+
+```java
+public String reorganizeString(String s) {
+    int[] freq = new int[26];
+    for (char c : s.toCharArray()) freq[c - 'a']++;
+    
+    PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> b[1] - a[1]);
+    for (int i = 0; i < 26; i++) {
+        if (freq[i] > 0) pq.offer(new int[]{i, freq[i]});
+    }
+    
+    StringBuilder sb = new StringBuilder();
+    int[] prev = null;
+    
+    while (!pq.isEmpty()) {
+        int[] curr = pq.poll();
+        sb.append((char)(curr[0] + 'a'));
+        curr[1]--;
+        
+        if (prev != null && prev[1] > 0) pq.offer(prev);
+        prev = curr;
+    }
+    
+    return sb.length() == s.length() ? sb.toString() : "";
+}
+```
+
+ Sabse zyada frequency wale char ko pehle use karo. Ek baar use karne ke baad agle iteration mein daalo (taaki adjacent na ho).
+
+---
+
+### 10. Minimum Cost to Connect Sticks
+**Problem:** Connect sticks with cost = sum of lengths, minimize total cost.
+
+```java
+public int connectSticks(int[] sticks) {
+    PriorityQueue<Integer> pq = new PriorityQueue<>();
+    for (int s : sticks) pq.offer(s);
+    
+    int cost = 0;
+    while (pq.size() > 1) {
+        int a = pq.poll();
+        int b = pq.poll();
+        int sum = a + b;
+        cost += sum;
+        pq.offer(sum);
+    }
+    return cost;
+}
+```
+
+ Hamesha do sabse chhote sticks uthao, unhe jodo, cost add karo, aur wapas heap mein daalo. Repeat until ek stick bache.
+
+---
+
+### 11. Last Stone Weight
+**Problem:** Smash two largest stones, add difference back.
+
+```java
+public int lastStoneWeight(int[] stones) {
+    PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> b - a);
+    for (int s : stones) pq.offer(s);
+    
+    while (pq.size() > 1) {
+        int a = pq.poll();
+        int b = pq.poll();
+        if (a != b) pq.offer(a - b);
+    }
+    return pq.isEmpty() ? 0 : pq.peek();
+}
+```
+
+ Max-heap mein saari stones daalo. Do sabse bade uthao, smash karo, difference wapas daalo.
+
+---
+
+### 12. Sort Characters By Frequency
+**Problem:** Sort string by decreasing frequency.
+
+```java
+public String frequencySort(String s) {
+    Map<Character, Integer> freq = new HashMap<>();
+    for (char c : s.toCharArray()) freq.put(c, freq.getOrDefault(c, 0) + 1);
+    
+    PriorityQueue<Map.Entry<Character, Integer>> pq = new PriorityQueue<>(
+        (a, b) -> b.getValue() - a.getValue()
+    );
+    pq.addAll(freq.entrySet());
+    
+    StringBuilder sb = new StringBuilder();
+    while (!pq.isEmpty()) {
+        Map.Entry<Character, Integer> entry = pq.poll();
+        sb.append(String.valueOf(entry.getKey()).repeat(entry.getValue()));
+    }
+    return sb.toString();
+}
+```
+
+---
+
+### 13. Kth Smallest Element in a Sorted Matrix
+**Problem:** Kth smallest in row-wise and col-wise sorted matrix.
+
+```java
+public int kthSmallest(int[][] matrix, int k) {
+    int n = matrix.length;
+    PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+    
+    // Add first column of each row
+    for (int i = 0; i < n; i++) {
+        pq.offer(new int[]{matrix[i][0], i, 0});
+    }
+    
+    for (int i = 0; i < k - 1; i++) {
+        int[] curr = pq.poll();
+        if (curr[2] + 1 < n) {
+            pq.offer(new int[]{matrix[curr[1]][curr[2] + 1], curr[1], curr[2] + 1});
+        }
+    }
+    return pq.peek()[0];
+}
+```
+
+ Min-heap mein har row ka first element daalo. K-1 baar smallest element nikaalo aur us row ka next element daalo. K-th time jo aayega woh answer hai.
+
+---
+
+### 14. Maximum Performance of a Team
+**Problem:** Choose at most k engineers to maximize speed * min(efficiency).
+
+```java
+public int maxPerformance(int n, int[] speed, int[] efficiency, int k) {
+    int[][] engineers = new int[n][2];
+    for (int i = 0; i < n; i++) {
+        engineers[i] = new int[]{efficiency[i], speed[i]};
+    }
+    
+    Arrays.sort(engineers, (a, b) -> b[0] - a[0]); // sort by efficiency descending
+    
+    PriorityQueue<Integer> pq = new PriorityQueue<>(); // min-heap of speeds
+    long sumSpeed = 0, maxPerformance = 0;
+    
+    for (int[] eng : engineers) {
+        pq.offer(eng[1]);
+        sumSpeed += eng[1];
+        
+        if (pq.size() > k) {
+            sumSpeed -= pq.poll();
+        }
+        
+        maxPerformance = Math.max(maxPerformance, sumSpeed * eng[0]);
+    }
+    return (int)(maxPerformance % 1000000007);
+}
+```
+
+ Engineers ko efficiency ke hisaab se sort karo (high to low). Min-heap mein speeds rakho. Jab size k se zyada ho jaye toh slowest speed hata do. Har baar current efficiency * sum(speeds) se max calculate karo.
+
+---
+
+### 15. Minimum Interval to Include Each Query
+**Problem:** For each query, find smallest interval containing that point.
+
+```java
+public int[] minInterval(int[][] intervals, int[] queries) {
+    int n = intervals.length;
+    int m = queries.length;
+    
+    // Sort intervals by start
+    Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
+    
+    // Store queries with original indices
+    int[][] sortedQueries = new int[m][2];
+    for (int i = 0; i < m; i++) {
+        sortedQueries[i] = new int[]{queries[i], i};
+    }
+    Arrays.sort(sortedQueries, (a, b) -> a[0] - b[0]);
+    
+    // Min-heap by interval length
+    PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> (a[1] - a[0]) - (b[1] - b[0]));
+    
+    int[] result = new int[m];
+    Arrays.fill(result, -1);
+    int idx = 0;
+    
+    for (int[] q : sortedQueries) {
+        int query = q[0];
+        int originalIdx = q[1];
+        
+        // Add all intervals that start <= query
+        while (idx < n && intervals[idx][0] <= query) {
+            pq.offer(intervals[idx]);
+            idx++;
+        }
+        
+        // Remove intervals that end < query
+        while (!pq.isEmpty() && pq.peek()[1] < query) {
+            pq.poll();
+        }
+        
+        if (!pq.isEmpty()) {
+            int[] smallest = pq.peek();
+            result[originalIdx] = smallest[1] - smallest[0] + 1;
+        }
+    }
+    return result;
+}
+```
+
+ Intervals ko start se sort karo, queries ko value se sort karo. Query ke liye saare relevant intervals (start <= query) heap mein daalo (sorted by length). Heap ke top mein smallest interval milega jo query cover karta hai.
+
+---
+
+### 16. Maximum Number of Events That Can Be Attended
+**Problem:** Attend maximum events, one per day, each event has [start, end].
+
+```java
+public int maxEvents(int[][] events) {
+    Arrays.sort(events, (a, b) -> a[0] - b[0]);
+    PriorityQueue<Integer> pq = new PriorityQueue<>();
+    
+    int i = 0, day = 0, count = 0;
+    int n = events.length;
+    
+    while (i < n || !pq.isEmpty()) {
+        if (pq.isEmpty()) day = events[i][0];
+        
+        // Add all events starting today
+        while (i < n && events[i][0] <= day) {
+            pq.offer(events[i][1]);
+            i++;
+        }
+        
+        // Remove expired events
+        while (!pq.isEmpty() && pq.peek() < day) {
+            pq.poll();
+        }
+        
+        // Attend one event today
+        if (!pq.isEmpty()) {
+            pq.poll();
+            count++;
+        }
+        day++;
+    }
+    return count;
+}
+```
+
+---
+
+### 17. IPO (Initial Public Offering)
+**Problem:** At most k projects, each needs capital, gives profit. Maximize final capital.
+
+```java
+public int findMaximizedCapital(int k, int w, int[] profits, int[] capital) {
+    int n = profits.length;
+    int[][] projects = new int[n][2];
+    for (int i = 0; i < n; i++) {
+        projects[i] = new int[]{capital[i], profits[i]};
+    }
+    
+    Arrays.sort(projects, (a, b) -> a[0] - b[0]);
+    PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> b - a); // max-heap of profits
+    
+    int i = 0;
+    for (int j = 0; j < k; j++) {
+        while (i < n && projects[i][0] <= w) {
+            pq.offer(projects[i][1]);
+            i++;
+        }
+        if (pq.isEmpty()) break;
+        w += pq.poll();
+    }
+    return w;
+}
+```
+
+ Projects ko required capital se sort karo. Available capital ke andar wale saare projects ke profits max-heap mein daalo. Sabse bada profit wala project select karo aur capital badhao. K baar repeat karo.
+
+---
+
+### 18. Maximum Sum Obtained of Any Permutation
+**Problem:** Given requests (L,R), maximize sum of chosen indices after permutation.
+
+```java
+public int maxSumRangeQuery(int[] nums, int[][] requests) {
+    int n = nums.length;
+    int[] freq = new int[n];
+    
+    for (int[] req : requests) {
+        freq[req[0]]++;
+        if (req[1] + 1 < n) freq[req[1] + 1]--;
+    }
+    
+    for (int i = 1; i < n; i++) {
+        freq[i] += freq[i - 1];
+    }
+    
+    Arrays.sort(nums);
+    Arrays.sort(freq);
+    
+    long sum = 0;
+    for (int i = 0; i < n; i++) {
+        sum += (long) nums[i] * freq[i];
+    }
+    return (int)(sum % 1000000007);
+}
+```
+
+ Difference array se har index ki frequency calculate karo. Frequency aur nums dono ko sort karo. Sabse bada number sabse zyada baar aane wale index pe assign karo.
+
+---
+
+### 19. The Skyline Problem
+**Problem:** Return skyline outline of buildings [L,R,height].
+
+```java
+public List<List<Integer>> getSkyline(int[][] buildings) {
+    List<List<Integer>> result = new ArrayList<>();
+    List<int[]> points = new ArrayList<>();
+    
+    for (int[] b : buildings) {
+        points.add(new int[]{b[0], -b[2]}); // start point
+        points.add(new int[]{b[1], b[2]});  // end point
+    }
+    
+    points.sort((a, b) -> {
+        if (a[0] != b[0]) return a[0] - b[0];
+        return a[1] - b[1];
+    });
+    
+    PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> b - a);
+    pq.offer(0);
+    int prevHeight = 0;
+    
+    for (int[] p : points) {
+        if (p[1] < 0) {
+            pq.offer(-p[1]); // start: add height
+        } else {
+            pq.remove(p[1]); // end: remove height (O(n) but ok for n<=10^4)
+        }
+        
+        int currHeight = pq.peek();
+        if (currHeight != prevHeight) {
+            result.add(Arrays.asList(p[0], currHeight));
+            prevHeight = currHeight;
+        }
+    }
+    return result;
+}
+```
+
+ Har building ke start aur end point banao (start height negative, end positive). Sort karo. Max-heap maintain karo current heights ka. Jab height change ho toh result mein point daalo.
+
+---
+
+### 20. Minimum Cost to Hire K Workers
+**Problem:** Hire k workers, each has quality and min wage ratio.
+
+```java
+public double mincostToHireWorkers(int[] quality, int[] wage, int k) {
+    int n = quality.length;
+    Worker[] workers = new Worker[n];
+    for (int i = 0; i < n; i++) {
+        workers[i] = new Worker(quality[i], wage[i]);
+    }
+    
+    Arrays.sort(workers, (a, b) -> Double.compare(a.ratio, b.ratio));
+    
+    PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> b - a); // max-heap of quality
+    int sumQuality = 0;
+    double minCost = Double.MAX_VALUE;
+    
+    for (Worker w : workers) {
+        pq.offer(w.quality);
+        sumQuality += w.quality;
+        
+        if (pq.size() > k) {
+            sumQuality -= pq.poll();
+        }
+        
+        if (pq.size() == k) {
+            minCost = Math.min(minCost, sumQuality * w.ratio);
+        }
+    }
+    return minCost;
+}
+
+class Worker {
+    int quality, wage;
+    double ratio;
+    Worker(int q, int w) {
+        quality = q;
+        wage = w;
+        ratio = (double) w / q;
+    }
+}
+```
+
+ Workers ko wage/quality ratio ke hisaab se sort karo. Har worker ko potential captain maano. Max-heap mein qualities rakho (k workers ki). Total quality * current ratio = total cost. Minimum cost nikaalo.
+
+---
+
+## 📌 Key Patterns Summary (Hinglish)
+
+| Pattern | Heap Type | Example Problems |
+|---------|-----------|------------------|
+| **Top K Elements** | Min-heap of size k | K Closest Points, Top K Frequent |
+| **Kth Element** | Min/Max-heap | Kth Largest, Kth Smallest |
+| **Median / Running Order** | Two heaps (max + min) | Median from Stream |
+| **Scheduling / Intervals** | Min-heap of end times | Meeting Rooms, Task Scheduler |
+| **Merging** | Min-heap | Merge K Lists |
+| **Greedy with Heap** | Max-heap | IPO, Maximum Performance |
+| **Real-time Min/Max** | Heap with lazy deletion | Sliding Window Maximum |
+
+## ⚡ Quick Tips
+
+1. **Java PriorityQueue default = min-heap** - Use `(a,b) -> b - a` for max-heap
+2. **Lazy deletion** - Jab element heap ke top pe ho aur invalid ho tabhi remove karo
+3. **Time complexity** - Heap operations `O(log n)`, building heap `O(n)`
+4. **Custom comparator** - Use lambda expressions for custom ordering
+5. **Space** - Usually `O(n)` or `O(k)` for heap
+
