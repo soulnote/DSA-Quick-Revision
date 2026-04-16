@@ -3,7 +3,7 @@
 
 ---
 
-## **Linked List Basics - Theory (Hinglish)**
+## **Linked List Basics - Theory ()**
 
 Linked list ek **linear data structure** hai jisme nodes ek sequence mein connected hote hain. Har node do cheezein store karta hai:
 1. **Data** - actual value
@@ -1043,24 +1043,6 @@ class OddEvenList {
 
 ---
 
-## **Quick Revision Table**
-
-| Problem | Time | Space | Key Technique |
-|---------|------|-------|---------------|
-| Reverse List | O(n) | O(1) | Three pointers |
-| Detect Cycle | O(n) | O(1) | Floyd's cycle |
-| Middle Element | O(n) | O(1) | Slow-fast pointer |
-| Remove Nth from End | O(n) | O(1) | Two pointers |
-| Merge Two Lists | O(m+n) | O(1) | Two pointers |
-| Palindrome | O(n) | O(1) | Reverse second half |
-| Intersection | O(m+n) | O(1) | Length difference |
-| Add Two Numbers | O(max(m,n)) | O(max(m,n)) | Carry method |
-| Rotate List | O(n) | O(1) | Make circular |
-| Reverse k-Group | O(n) | O(n/k) | Recursion |
-| Copy Random List | O(n) | O(1) | Interweaving |
-| Sort List | O(n log n) | O(log n) | Merge sort |
-
----
 
 ## **Complexity Analysis Cheat Sheet**
 
@@ -1086,7 +1068,7 @@ class OddEvenList {
 
 ---
 
-## **Interview Tips (Hinglish)**
+## **Interview Tips**
 
 1. **Dummy node use karo** - Head change karne wali problems mein dummy node bohot helpful hai
    ```java
@@ -1120,3 +1102,837 @@ class OddEvenList {
    - Cycle detect karte time fast.next null check karo
 
 ---
+
+
+## 🎯 Linked List Core Concepts
+
+**Linked List = Nodes connected by pointers/references**
+- **Singly Linked List:** Next pointer only
+- **Doubly Linked List:** Next and prev pointers
+- **Circular Linked List:** Last node points to head
+
+**Common Techniques:**
+- **Two Pointers (Slow/Fast):** Cycle detection, middle element
+- **Dummy Node:** Edge cases handle karne ke liye (empty list, head change)
+- **Reversal:** In-place reversal using prev/curr/next pointers
+- **Recursion:** Reverse printing, merge lists
+
+**Node structure:**
+```java
+class ListNode {
+    int val;
+    ListNode next;
+    ListNode(int x) { val = x; }
+}
+```
+
+---
+
+## 📋 20 Hard Linked List Problems
+
+---
+
+### 1. Reverse Linked List
+**Problem:** Singly linked list reverse karo.
+
+**Approach:** Iterative - prev, curr, next pointers. Recursive bhi ho sakta hai.
+
+```java
+// Iterative (Easy but fundamental)
+public ListNode reverseList(ListNode head) {
+    ListNode prev = null;
+    ListNode curr = head;
+    
+    while (curr != null) {
+        ListNode nextTemp = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = nextTemp;
+    }
+    return prev;
+}
+
+// Recursive
+public ListNode reverseListRecursive(ListNode head) {
+    if (head == null || head.next == null) return head;
+    ListNode newHead = reverseListRecursive(head.next);
+    head.next.next = head;
+    head.next = null;
+    return newHead;
+}
+```
+
+>  Iterative mein prev null se start karo. Har step mein curr ka next prev kar do, phir prev aur curr aage badhao. Recursive mein pehle last node tak jao, phir wapas aate hue links reverse karo.
+
+**Time:** O(n), **Space:** O(1) iterative, O(n) recursive
+
+---
+
+### 2. Detect Cycle (Floyd's Cycle Detection)
+**Problem:** Linked list mein cycle hai ya nahi?
+
+**Approach:** Slow (1 step) and fast (2 steps) pointers. Agar cycle hai toh fast kabhi slow ko catch karega.
+
+```java
+public boolean hasCycle(ListNode head) {
+    if (head == null) return false;
+    
+    ListNode slow = head;
+    ListNode fast = head;
+    
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+        if (slow == fast) return true;
+    }
+    return false;
+}
+```
+
+>  Slow ek step, fast do step chalega. Cycle hai toh fast slow ko kabhi na kabhi pakad lega. Race track mein fast runner slow runner ko lap kar deta hai, waise hi.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 3. Find Cycle Start Node
+**Problem:** Cycle ka starting node dhundho.
+
+**Approach:** Pehle slow-fast se cycle detect karo. Phir slow ko head pe le jao, dono ek step se chaloge - jaha milenge wahi cycle start.
+
+```java
+public ListNode detectCycle(ListNode head) {
+    ListNode slow = head;
+    ListNode fast = head;
+    
+    // Find meeting point
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+        if (slow == fast) break;
+    }
+    
+    // No cycle
+    if (fast == null || fast.next == null) return null;
+    
+    // Find cycle start
+    slow = head;
+    while (slow != fast) {
+        slow = slow.next;
+        fast = fast.next;
+    }
+    return slow;
+}
+```
+
+>  Meeting point milne ke baad, slow ko head pe le jao. Phir dono ek step se chalo. Meeting point hi cycle ka start hoga. Math proof hai - distance head to start = distance meeting to start.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 4. Find Middle of Linked List
+**Problem:** Middle node return karo. Even length mein second middle.
+
+**Approach:** Slow-fast pointers. Slow ek step, fast do step. Fast end pe pahunchega tab slow middle pe hoga.
+
+```java
+public ListNode middleNode(ListNode head) {
+    ListNode slow = head;
+    ListNode fast = head;
+    
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+    return slow;
+}
+```
+
+>  Fast jab end pe pahunch jayega, tab slow middle pe hoga. Even length mein fast null pe rukta hai, odd length mein fast.next null pe.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 5. Remove Nth Node from End
+**Problem:** Last se nth node remove karo.
+
+**Approach:** Dummy node + two pointers. First pointer ko n steps aage badhao, phir dono ko tab tak chalayo jab tak first null na ho jaye.
+
+```java
+public ListNode removeNthFromEnd(ListNode head, int n) {
+    ListNode dummy = new ListNode(0);
+    dummy.next = head;
+    ListNode first = dummy;
+    ListNode second = dummy;
+    
+    // Move first ahead by n+1 steps
+    for (int i = 0; i <= n; i++) {
+        first = first.next;
+    }
+    
+    // Move both until first reaches end
+    while (first != null) {
+        first = first.next;
+        second = second.next;
+    }
+    
+    // Remove nth node
+    second.next = second.next.next;
+    return dummy.next;
+}
+```
+
+>  Dummy node use karo taaki head remove karne mein problem na ho. First pointer ko n+1 steps aage karo, phir dono chalte raho. Jab first end pe pahunche, second pointer nth node ke just pehle hoga.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 6. Merge Two Sorted Lists
+**Problem:** Do sorted linked lists ko merge karo.
+
+**Approach:** Dummy node + compare nodes, chhota wala attach karo.
+
+```java
+public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+    ListNode dummy = new ListNode(0);
+    ListNode curr = dummy;
+    
+    while (l1 != null && l2 != null) {
+        if (l1.val <= l2.val) {
+            curr.next = l1;
+            l1 = l1.next;
+        } else {
+            curr.next = l2;
+            l2 = l2.next;
+        }
+        curr = curr.next;
+    }
+    
+    // Attach remaining nodes
+    if (l1 != null) curr.next = l1;
+    if (l2 != null) curr.next = l2;
+    
+    return dummy.next;
+}
+```
+
+>  Do lists mein se chhota value wala node uthao, result list mein attach karo. Ek list khatam ho jaye toh remaining list directly attach kar do.
+
+**Time:** O(m + n), **Space:** O(1)
+
+---
+
+### 7. Merge K Sorted Lists
+**Problem:** K sorted lists merge karo.
+
+**Approach 1:** Min-heap (priority queue). **Approach 2:** Divide and conquer (merge pairs recursively).
+
+```java
+// Min-Heap approach
+public ListNode mergeKLists(ListNode[] lists) {
+    if (lists == null || lists.length == 0) return null;
+    
+    PriorityQueue<ListNode> pq = new PriorityQueue<>((a, b) -> a.val - b.val);
+    
+    for (ListNode node : lists) {
+        if (node != null) pq.offer(node);
+    }
+    
+    ListNode dummy = new ListNode(0);
+    ListNode curr = dummy;
+    
+    while (!pq.isEmpty()) {
+        ListNode smallest = pq.poll();
+        curr.next = smallest;
+        curr = curr.next;
+        
+        if (smallest.next != null) {
+            pq.offer(smallest.next);
+        }
+    }
+    return dummy.next;
+}
+
+// Divide and Conquer approach (Better for large K)
+public ListNode mergeKListsDC(ListNode[] lists) {
+    if (lists == null || lists.length == 0) return null;
+    return mergeHelper(lists, 0, lists.length - 1);
+}
+
+private ListNode mergeHelper(ListNode[] lists, int left, int right) {
+    if (left == right) return lists[left];
+    int mid = left + (right - left) / 2;
+    ListNode l1 = mergeHelper(lists, left, mid);
+    ListNode l2 = mergeHelper(lists, mid + 1, right);
+    return mergeTwoLists(l1, l2);
+}
+```
+
+>  Min-heap mein saare lists ke first nodes daalo. Heap se smallest node uthao, result mein attach karo, uski list ka next node heap mein daalo. DC approach mein lists ko pairs mein merge karte jao.
+
+**Time:** O(N log K) where N = total nodes, **Space:** O(K) for heap
+
+---
+
+### 8. Reverse Nodes in k-Group
+**Problem:** List ko k size ke groups mein reverse karo. Last group chhota ho toh waise hi rahega.
+
+**Approach:** Recursion + reverse function. Pehle k nodes reverse karo, baaki list recursively handle karo.
+
+```java
+public ListNode reverseKGroup(ListNode head, int k) {
+    if (head == null) return null;
+    
+    // Check if we have k nodes
+    ListNode curr = head;
+    int count = 0;
+    while (curr != null && count < k) {
+        curr = curr.next;
+        count++;
+    }
+    
+    if (count < k) return head;  // Less than k nodes, return as is
+    
+    // Reverse first k nodes
+    ListNode prev = null;
+    ListNode next = null;
+    curr = head;
+    for (int i = 0; i < k; i++) {
+        next = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = next;
+    }
+    
+    // head is now the last node of reversed group
+    // Recursively reverse remaining list
+    head.next = reverseKGroup(curr, k);
+    
+    return prev;
+}
+```
+
+>  Pehle check karo ki k nodes hain ya nahi. Agar hain, toh pehle k nodes reverse karo. Phir head.next ko recursion result se connect karo. Return reversed group ka new head.
+
+**Time:** O(n), **Space:** O(n/k) recursion stack
+
+---
+
+### 9. Palindrome Linked List
+**Problem:** Linked list palindrome hai ya nahi?
+
+**Approach:** Middle find karo, second half reverse karo, phir compare karo.
+
+```java
+public boolean isPalindrome(ListNode head) {
+    if (head == null || head.next == null) return true;
+    
+    // Find middle
+    ListNode slow = head;
+    ListNode fast = head;
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+    
+    // Reverse second half
+    ListNode secondHalf = reverseList(slow);
+    ListNode firstHalf = head;
+    
+    // Compare
+    while (secondHalf != null) {
+        if (firstHalf.val != secondHalf.val) return false;
+        firstHalf = firstHalf.next;
+        secondHalf = secondHalf.next;
+    }
+    return true;
+}
+```
+
+>  Slow-fast se middle dhundho. Second half reverse karo. Phir first half aur reversed second half compare karo. Sab match kare toh palindrome.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 10. Add Two Numbers
+**Problem:** Do linked lists (digits reversed order) ko add karo. 2→4→3 is 342.
+
+**Approach:** Carry maintain karte hue add karo.
+
+```java
+public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+    ListNode dummy = new ListNode(0);
+    ListNode curr = dummy;
+    int carry = 0;
+    
+    while (l1 != null || l2 != null || carry != 0) {
+        int sum = carry;
+        if (l1 != null) {
+            sum += l1.val;
+            l1 = l1.next;
+        }
+        if (l2 != null) {
+            sum += l2.val;
+            l2 = l2.next;
+        }
+        
+        carry = sum / 10;
+        curr.next = new ListNode(sum % 10);
+        curr = curr.next;
+    }
+    return dummy.next;
+}
+```
+
+>  Do lists mein se digit + carry add karo. New digit = sum % 10, new carry = sum / 10. Jab tak dono lists aur carry bache tab tak karo.
+
+**Time:** O(max(m,n)), **Space:** O(max(m,n))
+
+---
+
+### 11. Copy List with Random Pointer
+**Problem:** Har node mein random pointer hai (kisi bhi node ko point kar sakta hai). Deep copy banao.
+
+**Approach:** Three passes: 1) Insert copy nodes after each original, 2) Set random pointers, 3) Separate lists.
+
+```java
+public Node copyRandomList(Node head) {
+    if (head == null) return null;
+    
+    // Pass 1: Insert copy nodes
+    Node curr = head;
+    while (curr != null) {
+        Node copy = new Node(curr.val);
+        copy.next = curr.next;
+        curr.next = copy;
+        curr = copy.next;
+    }
+    
+    // Pass 2: Set random pointers
+    curr = head;
+    while (curr != null) {
+        if (curr.random != null) {
+            curr.next.random = curr.random.next;
+        }
+        curr = curr.next.next;
+    }
+    
+    // Pass 3: Separate lists
+    Node dummy = new Node(0);
+    Node copyCurr = dummy;
+    curr = head;
+    
+    while (curr != null) {
+        copyCurr.next = curr.next;
+        copyCurr = copyCurr.next;
+        curr.next = copyCurr.next;
+        curr = curr.next;
+    }
+    return dummy.next;
+}
+```
+
+>  O(1) space wala approach - har original node ke baad copy node insert karo. Phir random pointers set karo (copy.random = original.random.next). Finally lists separate karo.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 12. Intersection of Two Linked Lists
+**Problem:** Do lists ka intersection node dhundho (Y shape).
+
+**Approach:** Length difference nikaalo, longer list ko aage badhao, phir compare karo.
+
+```java
+public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+    if (headA == null || headB == null) return null;
+    
+    ListNode a = headA;
+    ListNode b = headB;
+    
+    // Jab tak dono same nahi ho jate
+    while (a != b) {
+        a = (a == null) ? headB : a.next;
+        b = (b == null) ? headA : b.next;
+    }
+    return a;
+}
+```
+
+>  Elegant approach - dono pointers chalte raho. Agar koi null pe pahunche toh dusri list ke head pe le jao. Ye ensure karta hai ki dono pointers intersection tak same distance travel karein.
+
+**Time:** O(m+n), **Space:** O(1)
+
+---
+
+### 13. Swap Nodes in Pairs
+**Problem:** Adjacent nodes swap karo. 1→2→3→4 → 2→1→4→3
+
+**Approach:** Dummy node + recursion or iterative.
+
+```java
+public ListNode swapPairs(ListNode head) {
+    ListNode dummy = new ListNode(0);
+    dummy.next = head;
+    ListNode prev = dummy;
+    
+    while (prev.next != null && prev.next.next != null) {
+        ListNode first = prev.next;
+        ListNode second = prev.next.next;
+        
+        // Swap
+        first.next = second.next;
+        second.next = first;
+        prev.next = second;
+        
+        // Move prev
+        prev = first;
+    }
+    return dummy.next;
+}
+```
+
+>  Dummy node lo. Prev ke aage do nodes hain toh unko swap karo. First node second node ko point karega, second node first ko point karega, prev second ko point karega. Phir prev = first (swapped pair ke baad).
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 14. Reorder List
+**Problem:** L0 → L1 → L2 → L3 → L4 → L0 → L4 → L1 → L3 → L2
+
+**Approach:** Middle find karo, second half reverse karo, phir merge karo.
+
+```java
+public void reorderList(ListNode head) {
+    if (head == null || head.next == null) return;
+    
+    // Find middle
+    ListNode slow = head;
+    ListNode fast = head;
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+    
+    // Reverse second half
+    ListNode second = reverseList(slow.next);
+    slow.next = null;
+    
+    // Merge first and second halves
+    ListNode first = head;
+    while (second != null) {
+        ListNode temp1 = first.next;
+        ListNode temp2 = second.next;
+        
+        first.next = second;
+        second.next = temp1;
+        
+        first = temp1;
+        second = temp2;
+    }
+}
+```
+
+>  Middle dhundho, second half reverse karo. Phir first half aur reversed second half ko alternate mein merge karo.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 15. Rotate List
+**Problem:** List ko right se k steps rotate karo.
+
+**Approach:** List ko circular banao, phir n-k steps aage badhakar break karo.
+
+```java
+public ListNode rotateRight(ListNode head, int k) {
+    if (head == null || head.next == null || k == 0) return head;
+    
+    // Find length and make list circular
+    ListNode curr = head;
+    int length = 1;
+    while (curr.next != null) {
+        curr = curr.next;
+        length++;
+    }
+    curr.next = head;  // Make circular
+    
+    // Find new head
+    k = k % length;
+    int stepsToNewHead = length - k;
+    ListNode newTail = head;
+    for (int i = 1; i < stepsToNewHead; i++) {
+        newTail = newTail.next;
+    }
+    
+    ListNode newHead = newTail.next;
+    newTail.next = null;  // Break circle
+    
+    return newHead;
+}
+```
+
+>  Pehle length nikaalo aur list circular banao. K ko length se modulo karo. New head = length-k steps aage. Waha pe break karo.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 16. Odd Even Linked List
+**Problem:** Odd indices pehle, even indices baad mein. 1→2→3→4→5 → 1→3→5→2→4
+
+**Approach:** Two pointers - odd head aur even head maintain karo.
+
+```java
+public ListNode oddEvenList(ListNode head) {
+    if (head == null || head.next == null) return head;
+    
+    ListNode odd = head;
+    ListNode even = head.next;
+    ListNode evenHead = even;
+    
+    while (even != null && even.next != null) {
+        odd.next = even.next;
+        odd = odd.next;
+        even.next = odd.next;
+        even = even.next;
+    }
+    odd.next = evenHead;
+    return head;
+}
+```
+
+>  Odd pointer 1st node pe, even pointer 2nd node pe. Odd ko even ke next se connect karo, odd aage badhao. Even ko odd ke next se connect karo, even aage badhao. End mein odd.next = evenHead.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 17. Remove Duplicates from Sorted List II
+**Problem:** Duplicates wale nodes completely remove karo (ek bhi copy na rakho).
+
+**Approach:** Dummy node + prev pointer. Jab duplicate mile, tab tak skip karo.
+
+```java
+public ListNode deleteDuplicates(ListNode head) {
+    ListNode dummy = new ListNode(0);
+    dummy.next = head;
+    ListNode prev = dummy;
+    ListNode curr = head;
+    
+    while (curr != null) {
+        // Check if current is start of duplicates
+        boolean hasDuplicate = false;
+        while (curr.next != null && curr.val == curr.next.val) {
+            curr = curr.next;
+            hasDuplicate = true;
+        }
+        
+        if (hasDuplicate) {
+            prev.next = curr.next;  // Skip all duplicates
+        } else {
+            prev = prev.next;  // Move prev
+        }
+        curr = curr.next;
+    }
+    return dummy.next;
+}
+```
+
+>  Dummy node use karo. Jab duplicate chain mile, tab tak curr aage badhao. Phir prev.next = curr.next se saare duplicates skip karo. Warna prev aage badhao.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 18. Partition List
+**Problem:** List ko partition karo jaha nodes with value < x, phir nodes >= x.
+
+**Approach:** Two dummy lists - smaller and greater, phir join karo.
+
+```java
+public ListNode partition(ListNode head, int x) {
+    ListNode smallerHead = new ListNode(0);
+    ListNode greaterHead = new ListNode(0);
+    ListNode smaller = smallerHead;
+    ListNode greater = greaterHead;
+    
+    while (head != null) {
+        if (head.val < x) {
+            smaller.next = head;
+            smaller = smaller.next;
+        } else {
+            greater.next = head;
+            greater = greater.next;
+        }
+        head = head.next;
+    }
+    
+    greater.next = null;  // Important to avoid cycle
+    smaller.next = greaterHead.next;
+    
+    return smallerHead.next;
+}
+```
+
+>  Do dummy lists banao - ek chhote nodes ke liye, ek bade nodes ke liye. Traverse karte hue nodes ko unme daalo. End mein chhoti list ke end mein badi list join karo.
+
+**Time:** O(n), **Space:** O(1)
+
+---
+
+### 19. Flatten a Multilevel Doubly Linked List
+**Problem:** Doubly linked list jisme har node ka child pointer bhi hai. Flatten karo.
+
+**Approach:** Recursion se child list ko flatten karo aur insert karo.
+
+```java
+public Node flatten(Node head) {
+    if (head == null) return null;
+    
+    Node curr = head;
+    
+    while (curr != null) {
+        if (curr.child != null) {
+            Node next = curr.next;
+            Node childTail = flatten(curr.child);
+            
+            curr.next = curr.child;
+            curr.child.prev = curr;
+            
+            if (next != null) {
+                childTail.next = next;
+                next.prev = childTail;
+            }
+            
+            curr.child = null;
+            curr = childTail;
+        }
+        curr = curr.next;
+    }
+    return head;
+}
+```
+
+>  Har node ka child agar hai toh recursively flatten karo. Child list ko current ke baad insert karo. Child list ka tail find karo aur original next se connect karo.
+
+**Time:** O(n), **Space:** O(depth)
+
+---
+
+### 20. LRU Cache
+**Problem:** Least Recently Used cache implement karo. Get aur put O(1) mein.
+
+**Approach:** HashMap + Doubly Linked List. Recently used nodes head ke paas, least used tail ke paas.
+
+```java
+class LRUCache {
+    class Node {
+        int key, value;
+        Node prev, next;
+        Node(int k, int v) { key = k; value = v; }
+    }
+    
+    private Map<Integer, Node> map;
+    private Node head, tail;
+    private int capacity;
+    
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        map = new HashMap<>();
+        head = new Node(0, 0);
+        tail = new Node(0, 0);
+        head.next = tail;
+        tail.prev = head;
+    }
+    
+    public int get(int key) {
+        if (!map.containsKey(key)) return -1;
+        Node node = map.get(key);
+        removeNode(node);
+        addToFront(node);
+        return node.value;
+    }
+    
+    public void put(int key, int value) {
+        if (map.containsKey(key)) {
+            Node node = map.get(key);
+            node.value = value;
+            removeNode(node);
+            addToFront(node);
+        } else {
+            if (map.size() == capacity) {
+                Node lru = tail.prev;
+                removeNode(lru);
+                map.remove(lru.key);
+            }
+            Node newNode = new Node(key, value);
+            map.put(key, newNode);
+            addToFront(newNode);
+        }
+    }
+    
+    private void removeNode(Node node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+    
+    private void addToFront(Node node) {
+        node.next = head.next;
+        node.prev = head;
+        head.next.prev = node;
+        head.next = node;
+    }
+}
+```
+
+>  HashMap se O(1) lookup, Doubly Linked List se O(1) removal/addition. Recently used node ko head ke paas rakho, least recently used tail ke paas. Get/put pe node ko head pe move karo.
+
+**Time:** O(1), **Space:** O(capacity)
+
+
+---
+
+## 🎯 Hard Linked List Interview Tips
+
+1. **Dummy Node is your best friend:**
+   - Jab head change ho sakta hai (removal, insertion, partitioning)
+   - Edge cases handle karne mein help karta hai
+   - `ListNode dummy = new ListNode(0); dummy.next = head;`
+
+2. **Two Pointers (Slow/Fast) pattern:**
+   - Middle find karna
+   - Cycle detection
+   - Nth node from end
+
+3. **Reversal pattern:**
+```java
+ListNode prev = null;
+ListNode curr = head;
+while (curr != null) {
+    ListNode next = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = next;
+}
+```
+
+4. **Common Mistakes:**
+   - Null pointer exception - hamesha `node.next` access karne se pehle `node != null` check karo
+   - Cycle bhoolna (especially when reversing or merging)
+   - Recursion mein base case bhoolna
+
+5. **When to use recursion vs iteration:**
+   - Recursion: Reverse printing, reverse list (elegant), flatten (depth-based)
+   - Iteration: Most operations (better space complexity)
+
+6. **Visualization technique:**
+   - Paper pe draw karo pointers ke saath
+   - Har step ke baad kya change hoga socho
+   - Small example leke test karo
+
