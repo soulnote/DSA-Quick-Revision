@@ -1,10 +1,6 @@
 # Tree Data Structure
 
-## 📚 Theory + Java Code for All Important Tree Questions
-
----
-
-## **Tree Basics - Theory (Hinglish)**
+## **Tree Basics - Theory**
 
 Tree ek **hierarchical data structure** hai jisme nodes hote hain. Ek root node hota hai aur uske children.
 
@@ -66,9 +62,9 @@ class BinaryTree {
 
 ---
 
-## **1. Tree Traversals** ⭐ (Most Basic)
+## **1. Tree Traversals**
 
-### Theory (Hinglish)
+### Theory 
 Tree ke nodes ko visit karne ke 3 tarike hain:
 
 1. **Inorder (Left-Root-Right):** Sorted order mein nodes milte hain BST mein
@@ -184,7 +180,7 @@ class TreeTraversals {
 
 ---
 
-## **2. Maximum Depth/Height of Binary Tree** ⭐
+## **2. Maximum Depth/Height of Binary Tree** 
 
 ### Theory
 **Problem:** Tree ki maximum depth (root se leaf tak ki longest path) find karo.
@@ -231,7 +227,7 @@ class MaxDepth {
 
 ---
 
-## **3. Invert Binary Tree** ⭐ (Famous Question)
+## **3. Invert Binary Tree** 
 
 ### Theory
 **Problem:** Tree ko mirror image mein convert karo (left ↔ right swap).
@@ -291,7 +287,7 @@ class InvertTree {
 
 ---
 
-## **4. Lowest Common Ancestor (LCA)** ⭐⭐⭐
+## **4. Lowest Common Ancestor (LCA)**
 
 ### Theory
 **Problem:** Do nodes ka lowest common ancestor dhundho (jinka subtree dono nodes ko contain kare).
@@ -340,7 +336,7 @@ class LCA {
 
 ---
 
-## **5. Binary Tree Level Order Traversal** ⭐⭐
+## **5. Binary Tree Level Order Traversal**
 
 ### Theory
 **Problem:** Level wise nodes return karo (each level as separate list).
@@ -419,7 +415,7 @@ class LevelOrderTraversal {
 
 ---
 
-## **6. Validate Binary Search Tree** ⭐⭐⭐
+## **6. Validate Binary Search Tree**
 
 ### Theory
 **Problem:** Check karo ki tree valid BST hai ya nahi.
@@ -469,7 +465,7 @@ class ValidateBST {
 
 ---
 
-## **7. Symmetric Tree (Mirror Tree)** ⭐⭐
+## **7. Symmetric Tree (Mirror Tree)**
 
 ### Theory
 **Problem:** Check karo ki tree apna mirror image hai ya nahi.
@@ -524,7 +520,7 @@ class SymmetricTree {
 
 ---
 
-## **8. Diameter of Binary Tree** ⭐⭐
+## **8. Diameter of Binary Tree**
 
 ### Theory
 **Problem:** Tree ka diameter - do nodes ke beech ki longest path (edges count).
@@ -563,7 +559,7 @@ class DiameterOfTree {
 
 ---
 
-## **9. Path Sum** ⭐⭐
+## **9. Path Sum**
 
 ### Theory
 **Problem:** Check karo ki root se leaf tak koi path hai jiska sum targetSum ke equal ho.
@@ -639,7 +635,7 @@ class PathSum {
 
 ---
 
-## **10. Construct Binary Tree from Traversals** ⭐⭐⭐
+## **10. Construct Binary Tree from Traversals**
 
 ### Theory
 **Problem:** Inorder aur Preorder/Postorder se tree construct karo.
@@ -710,7 +706,7 @@ class BuildTree {
 
 ---
 
-## **11. Binary Tree Right Side View** ⭐⭐
+## **11. Binary Tree Right Side View**
 
 ### Theory
 **Problem:** Right side se dekho to sirf rightmost nodes dikhenge har level pe.
@@ -769,7 +765,7 @@ class RightSideView {
 
 ---
 
-## **12. Flatten Binary Tree to Linked List** ⭐⭐
+## **12. Flatten Binary Tree to Linked List**
 
 ### Theory
 **Problem:** Binary tree ko linked list mein convert karo (in-place, preorder order mein).
@@ -841,7 +837,7 @@ class FlattenTree {
 
 ---
 
-## **13. Kth Smallest Element in BST** ⭐⭐
+## **13. Kth Smallest Element in BST**
 
 ### Theory
 **Problem:** BST mein kth smallest element find karo.
@@ -901,7 +897,7 @@ class KthSmallest {
 
 ---
 
-## **14. Populating Next Right Pointers** ⭐⭐
+## **14. Populating Next Right Pointers**
 
 ### Theory
 **Problem:** Har node mein next right pointer set karo jo uske immediate right neighbor ko point kare.
@@ -1001,7 +997,7 @@ class ConnectNextRight {
 
 ---
 
-## **15. Serialize and Deserialize Binary Tree** ⭐⭐⭐
+## **15. Serialize and Deserialize Binary Tree**
 
 ### Theory
 **Problem:** Tree ko string mein convert karo (serialize) aur wapas tree banao (deserialize).
@@ -1120,7 +1116,7 @@ class SerializeDeserialize {
 
 ---
 
-## **Interview Tips (Hinglish)**
+## **Interview Tips **
 
 1. **Recursion pe pakad honi chahiye** - Trees ke 90% problems recursion se solve hoti hain
 2. **Base case mat bhoolna** - `if(root == null) return` sabse important line hai
@@ -1599,3 +1595,760 @@ Divide & Conquer → O(n) time
 **Golden Rule:** 
 > Agar har node pe constant kaam ho raha hai, time = O(n)
 > Agar har node pe O(k) kaam ho raha hai, time = O(n * k)
+
+## Most Asked 20 Hard Recursion Problems in Interview
+
+Here are the **most frequently asked hard Recursion/Backtracking problems** in FAANG and tier-1 company interviews, with **Java solutions** and **explanations**.
+
+---
+
+### 1. N-Queens
+**Problem:** Place N queens on N×N chessboard so no two attack each other.
+
+```java
+public List<List<String>> solveNQueens(int n) {
+    List<List<String>> result = new ArrayList<>();
+    char[][] board = new char[n][n];
+    for (int i = 0; i < n; i++) {
+        Arrays.fill(board[i], '.');
+    }
+    solve(result, board, 0, n);
+    return result;
+}
+
+private void solve(List<List<String>> result, char[][] board, int row, int n) {
+    if (row == n) {
+        result.add(construct(board));
+        return;
+    }
+    
+    for (int col = 0; col < n; col++) {
+        if (isSafe(board, row, col, n)) {
+            board[row][col] = 'Q';
+            solve(result, board, row + 1, n);
+            board[row][col] = '.'; // backtrack
+        }
+    }
+}
+
+private boolean isSafe(char[][] board, int row, int col, int n) {
+    // Check column
+    for (int i = 0; i < row; i++) {
+        if (board[i][col] == 'Q') return false;
+    }
+    // Check diagonal (top-left)
+    for (int i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--) {
+        if (board[i][j] == 'Q') return false;
+    }
+    // Check diagonal (top-right)
+    for (int i = row - 1, j = col + 1; i >= 0 && j < n; i--, j++) {
+        if (board[i][j] == 'Q') return false;
+    }
+    return true;
+}
+```
+
+ Har row mein ek queen rakhni hai. Har column try karo, agar safe hai toh queen rakh do, next row pe jao. Agar koi solution nahi milta toh backtrack karo (queen hata do).
+
+---
+
+### 2. Sudoku Solver
+**Problem:** Fill empty cells ('.') with digits 1-9 following Sudoku rules.
+
+```java
+public void solveSudoku(char[][] board) {
+    solve(board);
+}
+
+private boolean solve(char[][] board) {
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            if (board[i][j] == '.') {
+                for (char c = '1'; c <= '9'; c++) {
+                    if (isValid(board, i, j, c)) {
+                        board[i][j] = c;
+                        if (solve(board)) return true;
+                        board[i][j] = '.'; // backtrack
+                    }
+                }
+                return false; // No valid number found
+            }
+        }
+    }
+    return true; // Board is full
+}
+
+private boolean isValid(char[][] board, int row, int col, char c) {
+    for (int i = 0; i < 9; i++) {
+        if (board[row][i] == c) return false; // Check row
+        if (board[i][col] == c) return false; // Check column
+        int boxRow = 3 * (row / 3) + i / 3;
+        int boxCol = 3 * (col / 3) + i % 3;
+        if (board[boxRow][boxCol] == c) return false; // Check 3x3 box
+    }
+    return true;
+}
+```
+
+ Pehla empty cell dhundho, usme 1 se 9 tak numbers try karo. Agar number valid hai toh daal do aur agle empty cell ke liye recursion call karo. Agar baad mein koi solution nahi milta toh backtrack karke next number try karo.
+
+---
+
+### 3. Generate Parentheses
+**Problem:** Generate all combinations of n well-formed parentheses.
+
+```java
+public List<String> generateParenthesis(int n) {
+    List<String> result = new ArrayList<>();
+    backtrack(result, "", 0, 0, n);
+    return result;
+}
+
+private void backtrack(List<String> result, String curr, int open, int close, int n) {
+    if (curr.length() == 2 * n) {
+        result.add(curr);
+        return;
+    }
+    
+    if (open < n) {
+        backtrack(result, curr + "(", open + 1, close, n);
+    }
+    if (close < open) {
+        backtrack(result, curr + ")", open, close + 1, n);
+    }
+}
+```
+
+ Open brackets ka count < n hai toh '(' add karo. Close brackets ka count < open count hai toh ')' add karo. Jab length 2n ho jaye toh result mein add karo.
+
+---
+
+### 4. Combination Sum
+**Problem:** Find all unique combinations where numbers sum to target (can reuse same number).
+
+```java
+public List<List<Integer>> combinationSum(int[] candidates, int target) {
+    List<List<Integer>> result = new ArrayList<>();
+    Arrays.sort(candidates);
+    backtrack(result, new ArrayList<>(), candidates, target, 0);
+    return result;
+}
+
+private void backtrack(List<List<Integer>> result, List<Integer> temp, 
+                       int[] candidates, int remaining, int start) {
+    if (remaining < 0) return;
+    if (remaining == 0) {
+        result.add(new ArrayList<>(temp));
+        return;
+    }
+    
+    for (int i = start; i < candidates.length; i++) {
+        temp.add(candidates[i]);
+        backtrack(result, temp, candidates, remaining - candidates[i], i); // Not i+1 (reuse allowed)
+        temp.remove(temp.size() - 1);
+    }
+}
+```
+
+ Remaining target se current number subtract karte jao. Agar 0 ho jaye toh solution mil gaya. Agar negative ho jaye toh return. `i` pass karo because same element dobara use kar sakte ho.
+
+---
+
+### 5. Combination Sum II
+**Problem:** Find combinations where sum = target, each number used once, no duplicates.
+
+```java
+public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+    List<List<Integer>> result = new ArrayList<>();
+    Arrays.sort(candidates);
+    backtrack(result, new ArrayList<>(), candidates, target, 0);
+    return result;
+}
+
+private void backtrack(List<List<Integer>> result, List<Integer> temp,
+                       int[] candidates, int remaining, int start) {
+    if (remaining < 0) return;
+    if (remaining == 0) {
+        result.add(new ArrayList<>(temp));
+        return;
+    }
+    
+    for (int i = start; i < candidates.length; i++) {
+        if (i > start && candidates[i] == candidates[i - 1]) continue; // Skip duplicates
+        temp.add(candidates[i]);
+        backtrack(result, temp, candidates, remaining - candidates[i], i + 1);
+        temp.remove(temp.size() - 1);
+    }
+}
+```
+
+ Pehle sort karo. Agar same element consecutive hai toh skip karo (duplicate combination se bachne ke liye). `i+1` pass karo because same element dobaara use nahi kar sakte.
+
+---
+
+### 6. Permutations
+**Problem:** Generate all permutations of distinct integers.
+
+```java
+public List<List<Integer>> permute(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    boolean[] used = new boolean[nums.length];
+    backtrack(result, new ArrayList<>(), nums, used);
+    return result;
+}
+
+private void backtrack(List<List<Integer>> result, List<Integer> temp,
+                       int[] nums, boolean[] used) {
+    if (temp.size() == nums.length) {
+        result.add(new ArrayList<>(temp));
+        return;
+    }
+    
+    for (int i = 0; i < nums.length; i++) {
+        if (used[i]) continue;
+        used[i] = true;
+        temp.add(nums[i]);
+        backtrack(result, temp, nums, used);
+        temp.remove(temp.size() - 1);
+        used[i] = false;
+    }
+}
+```
+
+ `used` array maintain karo ki kaun se elements already use ho chuke hain. Har unused element ko try karo, use mark karo, recursion karo, phir unmark karo (backtrack).
+
+---
+
+### 7. Permutations II (With Duplicates)
+**Problem:** Generate all unique permutations with duplicate numbers.
+
+```java
+public List<List<Integer>> permuteUnique(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    Arrays.sort(nums);
+    boolean[] used = new boolean[nums.length];
+    backtrack(result, new ArrayList<>(), nums, used);
+    return result;
+}
+
+private void backtrack(List<List<Integer>> result, List<Integer> temp,
+                       int[] nums, boolean[] used) {
+    if (temp.size() == nums.length) {
+        result.add(new ArrayList<>(temp));
+        return;
+    }
+    
+    for (int i = 0; i < nums.length; i++) {
+        if (used[i]) continue;
+        if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) continue;
+        used[i] = true;
+        temp.add(nums[i]);
+        backtrack(result, temp, nums, used);
+        temp.remove(temp.size() - 1);
+        used[i] = false;
+    }
+}
+```
+
+ Sort karo. Agar current element previous ke equal hai aur previous used nahi hai toh skip karo (duplicate permutations avoid karne ke liye).
+
+---
+
+### 8. Subsets
+**Problem:** Generate all possible subsets (power set).
+
+```java
+public List<List<Integer>> subsets(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    backtrack(result, new ArrayList<>(), nums, 0);
+    return result;
+}
+
+private void backtrack(List<List<Integer>> result, List<Integer> temp,
+                       int[] nums, int start) {
+    result.add(new ArrayList<>(temp));
+    
+    for (int i = start; i < nums.length; i++) {
+        temp.add(nums[i]);
+        backtrack(result, temp, nums, i + 1);
+        temp.remove(temp.size() - 1);
+    }
+}
+```
+
+ Har recursion call mein current subset result mein add karo. Fir remaining elements mein se ek element choose karo, add karo, recursion karo, phir remove karo.
+
+---
+
+### 9. Subsets II (With Duplicates)
+**Problem:** Generate unique subsets with duplicate numbers.
+
+```java
+public List<List<Integer>> subsetsWithDup(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    Arrays.sort(nums);
+    backtrack(result, new ArrayList<>(), nums, 0);
+    return result;
+}
+
+private void backtrack(List<List<Integer>> result, List<Integer> temp,
+                       int[] nums, int start) {
+    result.add(new ArrayList<>(temp));
+    
+    for (int i = start; i < nums.length; i++) {
+        if (i > start && nums[i] == nums[i - 1]) continue;
+        temp.add(nums[i]);
+        backtrack(result, temp, nums, i + 1);
+        temp.remove(temp.size() - 1);
+    }
+}
+```
+
+ Sort karo. Consecutive duplicates ko skip karo same level pe.
+
+---
+
+### 10. Palindrome Partitioning
+**Problem:** Partition string into palindromic substrings.
+
+```java
+public List<List<String>> partition(String s) {
+    List<List<String>> result = new ArrayList<>();
+    backtrack(result, new ArrayList<>(), s, 0);
+    return result;
+}
+
+private void backtrack(List<List<String>> result, List<String> temp,
+                       String s, int start) {
+    if (start == s.length()) {
+        result.add(new ArrayList<>(temp));
+        return;
+    }
+    
+    for (int end = start + 1; end <= s.length(); end++) {
+        String substring = s.substring(start, end);
+        if (isPalindrome(substring)) {
+            temp.add(substring);
+            backtrack(result, temp, s, end);
+            temp.remove(temp.size() - 1);
+        }
+    }
+}
+
+private boolean isPalindrome(String s) {
+    int i = 0, j = s.length() - 1;
+    while (i < j) {
+        if (s.charAt(i++) != s.charAt(j--)) return false;
+    }
+    return true;
+}
+```
+
+ String ko different lengths mein cut karo. Agar cut part palindrome hai toh temp mein add karo, baaki string ke liye recursion call karo.
+
+---
+
+### 11. Word Search
+**Problem:** Check if word exists in 2D grid (adjacent cells).
+
+```java
+public boolean exist(char[][] board, String word) {
+    int m = board.length, n = board[0].length;
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (dfs(board, word, i, j, 0)) return true;
+        }
+    }
+    return false;
+}
+
+private boolean dfs(char[][] board, String word, int i, int j, int index) {
+    if (index == word.length()) return true;
+    if (i < 0 || i >= board.length || j < 0 || j >= board[0].length) return false;
+    if (board[i][j] != word.charAt(index)) return false;
+    
+    char temp = board[i][j];
+    board[i][j] = '#'; // Mark as visited
+    
+    boolean found = dfs(board, word, i + 1, j, index + 1) ||
+                    dfs(board, word, i - 1, j, index + 1) ||
+                    dfs(board, word, i, j + 1, index + 1) ||
+                    dfs(board, word, i, j - 1, index + 1);
+    
+    board[i][j] = temp; // Backtrack
+    return found;
+}
+```
+
+ Har cell se start karo. 4 directions mein DFS karo. Current cell ko mark karo visited (temporarily) taki dobaara na use ho. Agar word complete ho jaye toh true return karo.
+
+---
+
+### 12. Restore IP Addresses
+**Problem:** Generate all valid IP addresses from string.
+
+```java
+public List<String> restoreIpAddresses(String s) {
+    List<String> result = new ArrayList<>();
+    backtrack(result, new ArrayList<>(), s, 0);
+    return result;
+}
+
+private void backtrack(List<String> result, List<String> temp, 
+                       String s, int start) {
+    if (temp.size() == 4) {
+        if (start == s.length()) {
+            result.add(String.join(".", temp));
+        }
+        return;
+    }
+    
+    for (int i = 1; i <= 3 && start + i <= s.length(); i++) {
+        String segment = s.substring(start, start + i);
+        if (isValid(segment)) {
+            temp.add(segment);
+            backtrack(result, temp, s, start + i);
+            temp.remove(temp.size() - 1);
+        }
+    }
+}
+
+private boolean isValid(String segment) {
+    if (segment.length() > 1 && segment.charAt(0) == '0') return false;
+    int num = Integer.parseInt(segment);
+    return num >= 0 && num <= 255;
+}
+```
+
+ String ko 4 parts mein baantna hai. Har part length 1-3 ki ho sakti hai aur value 0-255 ke beech mein honi chahiye. Leading zero allowed nahi hai (except "0" itself).
+
+---
+
+### 13. Letter Combinations of a Phone Number
+**Problem:** Return all letter combinations for phone digits.
+
+```java
+private static final String[] MAPPING = {
+    "", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"
+};
+
+public List<String> letterCombinations(String digits) {
+    if (digits.isEmpty()) return new ArrayList<>();
+    List<String> result = new ArrayList<>();
+    backtrack(result, new StringBuilder(), digits, 0);
+    return result;
+}
+
+private void backtrack(List<String> result, StringBuilder sb, 
+                       String digits, int index) {
+    if (index == digits.length()) {
+        result.add(sb.toString());
+        return;
+    }
+    
+    String letters = MAPPING[digits.charAt(index) - '0'];
+    for (char c : letters.toCharArray()) {
+        sb.append(c);
+        backtrack(result, sb, digits, index + 1);
+        sb.deleteCharAt(sb.length() - 1);
+    }
+}
+```
+
+ Har digit ke corresponding letters pe loop karo. Ek letter choose karo, aage badho, backtrack karo.
+
+---
+
+### 14. Factor Combinations
+**Problem:** Find all combinations of factors of n (excluding 1 and n).
+
+```java
+public List<List<Integer>> getFactors(int n) {
+    List<List<Integer>> result = new ArrayList<>();
+    backtrack(result, new ArrayList<>(), n, 2);
+    return result;
+}
+
+private void backtrack(List<List<Integer>> result, List<Integer> temp,
+                       int n, int start) {
+    if (n == 1) {
+        if (temp.size() > 1) {
+            result.add(new ArrayList<>(temp));
+        }
+        return;
+    }
+    
+    for (int i = start; i <= Math.sqrt(n); i++) {
+        if (n % i == 0) {
+            temp.add(i);
+            backtrack(result, temp, n / i, i);
+            temp.remove(temp.size() - 1);
+        }
+    }
+    
+    // Add the last factor
+    if (n >= start) {
+        temp.add(n);
+        backtrack(result, temp, 1, start);
+        temp.remove(temp.size() - 1);
+    }
+}
+```
+
+ `n` ke factors dhundho (i se sqrt(n) tak). Factor milne pe temp mein add karo, `n/i` ke liye recursion karo. End mein last factor add karo.
+
+---
+
+### 15. Gray Code
+**Problem:** Generate n-bit Gray code sequence.
+
+```java
+public List<Integer> grayCode(int n) {
+    List<Integer> result = new ArrayList<>();
+    result.add(0);
+    backtrack(result, n, 1);
+    return result;
+}
+
+private void backtrack(List<Integer> result, int n, int size) {
+    if (size == 1 << n) return;
+    
+    int prev = result.get(size - 1);
+    for (int i = 0; i < n; i++) {
+        int next = prev ^ (1 << i);
+        if (!result.contains(next)) {
+            result.add(next);
+            backtrack(result, n, size + 1);
+            return; // Found valid next number
+        }
+    }
+}
+```
+
+ Last number se ek bit flip karke next number generate karo. Agar woh number already sequence mein nahi hai toh use add karo aur recursion continue karo.
+
+---
+
+### 16. Remove Invalid Parentheses
+**Problem:** Remove minimum parentheses to make string valid.
+
+```java
+public List<String> removeInvalidParentheses(String s) {
+    List<String> result = new ArrayList<>();
+    Set<String> visited = new HashSet<>();
+    Queue<String> queue = new LinkedList<>();
+    
+    queue.offer(s);
+    visited.add(s);
+    boolean found = false;
+    
+    while (!queue.isEmpty()) {
+        String curr = queue.poll();
+        
+        if (isValid(curr)) {
+            result.add(curr);
+            found = true;
+        }
+        
+        if (found) continue;
+        
+        for (int i = 0; i < curr.length(); i++) {
+            if (curr.charAt(i) != '(' && curr.charAt(i) != ')') continue;
+            String next = curr.substring(0, i) + curr.substring(i + 1);
+            if (!visited.contains(next)) {
+                visited.add(next);
+                queue.offer(next);
+            }
+        }
+    }
+    return result;
+}
+
+private boolean isValid(String s) {
+    int count = 0;
+    for (char c : s.toCharArray()) {
+        if (c == '(') count++;
+        else if (c == ')') {
+            count--;
+            if (count < 0) return false;
+        }
+    }
+    return count == 0;
+}
+```
+
+ BFS approach - har level pe ek character remove karo. Pehle level jahan valid string milegi wahi minimum removals honge. Duplicate strings avoid karne ke liye visited set use karo.
+
+---
+
+### 17. Word Break II
+**Problem:** Add spaces to break string into dictionary words.
+
+```java
+public List<String> wordBreak(String s, List<String> wordDict) {
+    Set<String> dict = new HashSet<>(wordDict);
+    Map<String, List<String>> memo = new HashMap<>();
+    return dfs(s, dict, memo);
+}
+
+private List<String> dfs(String s, Set<String> dict, Map<String, List<String>> memo) {
+    if (memo.containsKey(s)) return memo.get(s);
+    
+    List<String> result = new ArrayList<>();
+    if (dict.contains(s)) result.add(s);
+    
+    for (int i = 1; i < s.length(); i++) {
+        String prefix = s.substring(0, i);
+        if (dict.contains(prefix)) {
+            List<String> suffixes = dfs(s.substring(i), dict, memo);
+            for (String suffix : suffixes) {
+                result.add(prefix + " " + suffix);
+            }
+        }
+    }
+    
+    memo.put(s, result);
+    return result;
+}
+```
+
+ String ko prefix aur suffix mein baanto. Agar prefix dictionary mein hai toh suffix ke liye recursion call karo. Memoization use karo taki same substring baar baar na compute ho.
+
+---
+
+### 18. Expression Add Operators
+**Problem:** Add operators (+, -, *) to make expression equal target.
+
+```java
+public List<String> addOperators(String num, int target) {
+    List<String> result = new ArrayList<>();
+    if (num == null || num.length() == 0) return result;
+    backtrack(result, new StringBuilder(), num, target, 0, 0, 0);
+    return result;
+}
+
+private void backtrack(List<String> result, StringBuilder expr, String num,
+                       int target, int index, long eval, long prev) {
+    if (index == num.length()) {
+        if (eval == target) result.add(expr.toString());
+        return;
+    }
+    
+    for (int i = index; i < num.length(); i++) {
+        if (i != index && num.charAt(index) == '0') break; // No leading zero
+        
+        long curr = Long.parseLong(num.substring(index, i + 1));
+        int len = expr.length();
+        
+        if (index == 0) {
+            expr.append(curr);
+            backtrack(result, expr, num, target, i + 1, curr, curr);
+            expr.setLength(len);
+        } else {
+            // Try '+'
+            expr.append("+").append(curr);
+            backtrack(result, expr, num, target, i + 1, eval + curr, curr);
+            expr.setLength(len);
+            
+            // Try '-'
+            expr.append("-").append(curr);
+            backtrack(result, expr, num, target, i + 1, eval - curr, -curr);
+            expr.setLength(len);
+            
+            // Try '*'
+            expr.append("*").append(curr);
+            backtrack(result, expr, num, target, i + 1, 
+                     eval - prev + prev * curr, prev * curr);
+            expr.setLength(len);
+        }
+    }
+}
+```
+
+ Multiplication ke liye special handling chahiye because operator precedence. `prev` variable store karo last term ko. Multiplication ke time pe `eval - prev + prev * curr` karo.
+
+---
+
+### 19. Partition to K Equal Sum Subsets
+**Problem:** Partition array into k subsets with equal sum.
+
+```java
+public boolean canPartitionKSubsets(int[] nums, int k) {
+    int sum = Arrays.stream(nums).sum();
+    if (sum % k != 0) return false;
+    int target = sum / k;
+    Arrays.sort(nums);
+    boolean[] used = new boolean[nums.length];
+    return backtrack(nums, used, k, 0, target, 0, nums.length - 1);
+}
+
+private boolean backtrack(int[] nums, boolean[] used, int k, int currSum,
+                          int target, int start, int index) {
+    if (k == 1) return true;
+    if (currSum == target) {
+        return backtrack(nums, used, k - 1, 0, target, 0, nums.length - 1);
+    }
+    
+    for (int i = start; i >= 0; i--) {
+        if (!used[i] && currSum + nums[i] <= target) {
+            used[i] = true;
+            if (backtrack(nums, used, k, currSum + nums[i], target, i - 1, index)) {
+                return true;
+            }
+            used[i] = false;
+        }
+    }
+    return false;
+}
+```
+
+ Pehle total sum calculate karo, target = sum/k. Ek subset mein target sum achieve karne ke baad next subset ke liye recursion call karo. Backtracking se saare subsets fill karo.
+
+---
+
+### 20. Beautiful Arrangement
+**Problem:** Count permutations where for each i, either i % nums[i] == 0 or nums[i] % i == 0.
+
+```java
+public int countArrangement(int n) {
+    boolean[] used = new boolean[n + 1];
+    return backtrack(used, 1, n);
+}
+
+private int backtrack(boolean[] used, int pos, int n) {
+    if (pos > n) return 1;
+    
+    int count = 0;
+    for (int i = 1; i <= n; i++) {
+        if (!used[i] && (i % pos == 0 || pos % i == 0)) {
+            used[i] = true;
+            count += backtrack(used, pos + 1, n);
+            used[i] = false;
+        }
+    }
+    return count;
+}
+```
+
+ Position `pos` pe, unused numbers mein se woh number select karo jo condition satisfy kare (`i % pos == 0` ya `pos % i == 0`). Phir next position pe jao.
+
+---
+
+## 📌 Key Recursion/Backtracking Patterns 
+
+| Pattern | Key Insight | Example Problems |
+|---------|-------------|------------------|
+| **Choose/Not Choose** | Har element ko include/exclude karo | Subsets, Combination Sum |
+| **Permutation** | `used` array, har unused element try karo | Permutations, N-Queens |
+| **Decision Tree** | Har decision pe branch karo | Generate Parentheses, Letter Combinations |
+| **Grid DFS** | 4 directions, mark visited | Word Search, Word Search II |
+| **Partitioning** | String/Array ko different cuts pe break karo | Palindrome Partitioning, Restore IP |
+| **Pruning** | Early termination for invalid branches | Sudoku Solver, N-Queens |
+
+## ⚡ Quick Tips
+
+1. **Base Case** - Recursion rokne ki condition (usually end of array/string)
+2. **Backtrack** - State restore karo after recursion call (remove last element, unmark visited)
+3. **Pruning** - Invalid paths ko early terminate karo (performance boost)
+4. **Memoization** - Overlapping subproblems ke liye cache use karo
+5. **Sorting** - Duplicates handle karne ke liye sort karo aur consecutive duplicates skip karo
