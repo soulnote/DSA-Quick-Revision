@@ -1,0 +1,1077 @@
+
+# DP on Subsequences Pattern
+
+## Subsequence DP ke 10 Main Variants:
+
+| Variant | Description | Approach |
+|---------|-------------|----------|
+| **Subset Sum** | Does subset sum to target? | Take or skip |
+| **Count Subsets with Sum** | Count subsets summing to target | Take + skip counting |
+| **Minimum Subset Sum Difference** | Partition into two with min diff | Target = sum/2 |
+| **Equal Sum Partition** | Can array be split into equal sum | Target = sum/2 |
+| **Target Sum (+/-)** | Assign + or - to reach target | P - N = target |
+| **Number of Subsequences with Sum** | Count subsequences with given sum | Take/skip with modulo |
+| **Largest Divisible Subset** | Every pair divisible | Sort + LIS |
+| **Longest Increasing Subsequence** | Strictly increasing | Pick/skip with prev |
+| **Number of Longest Increasing Subseq** | Count of LIS | Pair (len, count) |
+| **Maximum Sum Increasing Subseq** | Max sum instead of length | Sum aggregation |
+
+---
+
+## 1. **Subset Sum Problem (Partition Equal Subset Sum - Leetcode 416)**
+
+**Instinct:**  
+Array ko do subsets me divide karna hai with equal sum. Means total sum even hona chahiye aur target = sum/2 achieve karna hai. Har element ya toh lo ya mat lo.
+
+**Approach:**  
+1. Total sum calculate karo, agar odd hai toh false
+2. target = sum/2
+3. Memo[i][target] = kya index i se target achieve kar sakte ho
+4. Base: target == 0 → true; i == n → false
+5. Ya toh lo (target - nums[i]) ya mat lo
+
+```java
+class Solution {
+    int[] nums;
+    int n;
+    Boolean[][] memo;
+    
+    public boolean canPartition(int[] nums) {
+        this.nums = nums;
+        n = nums.length;
+        int sum = 0;
+        for (int num : nums) sum += num;
+        if (sum % 2 != 0) return false;
+        
+        int target = sum / 2;
+        memo = new Boolean[n][target + 1];
+        return dfs(0, target);
+    }
+    
+    private boolean dfs(int i, int target) {
+        if (target == 0) return true;
+        if (i >= n || target < 0) return false;
+        if (memo[i][target] != null) return memo[i][target];
+        
+        boolean take = dfs(i + 1, target - nums[i]);
+        boolean skip = dfs(i + 1, target);
+        
+        memo[i][target] = take || skip;
+        return memo[i][target];
+    }
+}
+```
+
+**Key Insight:** Classic subset sum - 0/1 knapsack style. Existence check.
+
+---
+
+## 2. **Count Subsets with Given Sum**
+
+**Instinct:**  
+Kitne subsets ka sum exactly target ke equal hai. Har element ya toh lo ya mat lo, count add karo.
+
+**Approach:**  
+1. Memo[i][target] = number of subsets from index i with given target
+2. Base: target == 0 → 1; i == n → 0
+3. take + skip (if target >= nums[i])
+
+```java
+class Solution {
+    int[] nums;
+    int n;
+    Integer[][] memo;
+    
+    public int countSubsetsWithSum(int[] nums, int target) {
+        this.nums = nums;
+        n = nums.length;
+        memo = new Integer[n][target + 1];
+        return dfs(0, target);
+    }
+    
+    private int dfs(int i, int target) {
+        if (target == 0) return 1;
+        if (i >= n || target < 0) return 0;
+        if (memo[i][target] != null) return memo[i][target];
+        
+        int take = dfs(i + 1, target - nums[i]);
+        int skip = dfs(i + 1, target);
+        
+        memo[i][target] = take + skip;
+        return memo[i][target];
+    }
+}
+```
+
+**Key Insight:** Count subsets = sum of take and skip. Base case when target becomes 0.
+
+---
+
+## 3. **Target Sum (Leetcode 494)**
+
+**Instinct:**  
+Har element ke aage + ya - laga kar target sum banana hai. Let P = positive sum, N = negative sum. P - N = target aur P + N = sum. So P = (target + sum)/2. Problem becomes: count subsets with sum = (target+sum)/2.
+
+**Approach:**  
+1. total sum calculate karo
+2. Agar (target + sum) odd hai ya target > sum, return 0
+3. targetSum = (target + sum) / 2
+4. Count subsets with sum = targetSum
+
+```java
+class Solution {
+    int[] nums;
+    int n;
+    Integer[][] memo;
+    
+    public int findTargetSumWays(int[] nums, int target) {
+        this.nums = nums;
+        n = nums.length;
+        int sum = 0;
+        for (int num : nums) sum += num;
+        
+        if (target > sum || (target + sum) % 2 != 0) return 0;
+        int targetSum = (target + sum) / 2;
+        
+        memo = new Integer[n][targetSum + 1];
+        return dfs(0, targetSum);
+    }
+    
+    private int dfs(int i, int target) {
+        if (target == 0 && i == n) return 1;
+        if (i >= n) return 0;
+        if (target < 0) return 0;
+        if (memo[i][target] != null) return memo[i][target];
+        
+        int take = dfs(i + 1, target - nums[i]);
+        int skip = dfs(i + 1, target);
+        
+        memo[i][target] = take + skip;
+        return memo[i][target];
+    }
+}
+```
+
+**Key Insight:** Convert +- problem to subset sum. P = (target+sum)/2.
+
+---
+
+## 4. **Minimum Subset Sum Difference**
+
+**Instinct:**  
+Array ko do subsets me divide karna hai such that sum difference minimum ho. Target = sum/2 ke nearest sum find karo. Answer = sum - 2 * best.
+
+**Approach:**  
+1. total sum calculate karo
+2. target = sum/2
+3. Find max subset sum <= target
+4. Answer = sum - 2 * maxSum
+
+```java
+class Solution {
+    int[] nums;
+    int n;
+    Integer[][] memo;
+    
+    public int minSubsetSumDifference(int[] nums) {
+        this.nums = nums;
+        n = nums.length;
+        int sum = 0;
+        for (int num : nums) sum += num;
+        
+        int target = sum / 2;
+        memo = new Integer[n][target + 1];
+        int maxSum = dfs(0, target);
+        return sum - 2 * maxSum;
+    }
+    
+    private int dfs(int i, int capacity) {
+        if (i >= n || capacity <= 0) return 0;
+        if (memo[i][capacity] != null) return memo[i][capacity];
+        
+        int skip = dfs(i + 1, capacity);
+        int take = 0;
+        if (nums[i] <= capacity) {
+            take = nums[i] + dfs(i + 1, capacity - nums[i]);
+        }
+        
+        memo[i][capacity] = Math.max(skip, take);
+        return memo[i][capacity];
+    }
+}
+```
+
+**Key Insight:** Minimize difference = find subset closest to sum/2.
+
+---
+
+## 5. **Largest Divisible Subset (Leetcode 368)**
+
+**Instinct:**  
+Subset where for every pair (a,b), a % b == 0 or b % a == 0. Sort array, then for each i, find largest subset ending at i where nums[i] % nums[j] == 0.
+
+**Approach:**  
+1. Sort array
+2. Memo[i] = largest divisible subset ending at i
+3. For each j < i, if nums[i] % nums[j] == 0, update
+
+```java
+class Solution {
+    int[] nums;
+    int n;
+    List<Integer>[] memo;
+    
+    public List<Integer> largestDivisibleSubset(int[] nums) {
+        this.nums = nums;
+        n = nums.length;
+        Arrays.sort(nums);
+        memo = new List[n];
+        
+        List<Integer> result = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            List<Integer> subset = dfs(i);
+            if (subset.size() > result.size()) {
+                result = subset;
+            }
+        }
+        return result;
+    }
+    
+    private List<Integer> dfs(int i) {
+        if (memo[i] != null) return memo[i];
+        
+        List<Integer> best = new ArrayList<>();
+        best.add(nums[i]);
+        
+        for (int j = 0; j < i; j++) {
+            if (nums[i] % nums[j] == 0) {
+                List<Integer> candidate = new ArrayList<>(dfs(j));
+                if (candidate.size() + 1 > best.size()) {
+                    best = new ArrayList<>(candidate);
+                    best.add(nums[i]);
+                }
+            }
+        }
+        
+        memo[i] = best;
+        return best;
+    }
+}
+```
+
+**Key Insight:** Sort + DP. Divisible property is transitive when sorted.
+
+---
+
+## 6. **Longest Increasing Subsequence (Leetcode 300) - Subsequence**
+
+**Instinct:**  
+Array me longest strictly increasing subsequence. Har element ya toh sequence me lo (if greater than previous) ya skip.
+
+**Approach:**  
+1. Memo[i][prev] = LIS length from i with previous index prev
+2. Base: i == n → 0
+3. skip or take (if prev == -1 or nums[i] > nums[prev])
+
+```java
+class Solution {
+    int[] nums;
+    int n;
+    Integer[][] memo;
+    
+    public int lengthOfLIS(int[] nums) {
+        this.nums = nums;
+        n = nums.length;
+        memo = new Integer[n][n + 1];
+        return dfs(0, -1);
+    }
+    
+    private int dfs(int i, int prev) {
+        if (i == n) return 0;
+        int prevIdx = prev + 1;
+        if (memo[i][prevIdx] != null) return memo[i][prevIdx];
+        
+        int skip = dfs(i + 1, prev);
+        int take = 0;
+        if (prev == -1 || nums[i] > nums[prev]) {
+            take = 1 + dfs(i + 1, i);
+        }
+        
+        memo[i][prevIdx] = Math.max(skip, take);
+        return memo[i][prevIdx];
+    }
+}
+```
+
+**Key Insight:** Classic LIS - pick/skip with previous index tracking.
+
+---
+
+## 7. **Number of Longest Increasing Subsequence (Leetcode 673)**
+
+**Instinct:**  
+Sirf length nahi, count bhi chahiye of all LIS. Har state ke liye (length, count) store karo.
+
+**Approach:**  
+1. Memo[i] = {maxLength from i, count}
+2. For each j > i where nums[j] > nums[i]
+3. Find best length, sum counts
+
+```java
+class Solution {
+    int[] nums;
+    int n;
+    Pair[] memo;
+    
+    class Pair {
+        int len;
+        int count;
+        Pair(int l, int c) { len = l; count = c; }
+    }
+    
+    public int findNumberOfLIS(int[] nums) {
+        this.nums = nums;
+        n = nums.length;
+        memo = new Pair[n];
+        
+        int maxLen = 0;
+        int totalCount = 0;
+        
+        for (int i = 0; i < n; i++) {
+            Pair p = dfs(i);
+            if (p.len > maxLen) {
+                maxLen = p.len;
+                totalCount = p.count;
+            } else if (p.len == maxLen) {
+                totalCount += p.count;
+            }
+        }
+        return totalCount;
+    }
+    
+    private Pair dfs(int i) {
+        if (memo[i] != null) return memo[i];
+        
+        int maxLen = 1;
+        int totalCount = 1;
+        
+        for (int j = i + 1; j < n; j++) {
+            if (nums[j] > nums[i]) {
+                Pair next = dfs(j);
+                if (next.len + 1 > maxLen) {
+                    maxLen = next.len + 1;
+                    totalCount = next.count;
+                } else if (next.len + 1 == maxLen) {
+                    totalCount += next.count;
+                }
+            }
+        }
+        
+        memo[i] = new Pair(maxLen, totalCount);
+        return memo[i];
+    }
+}
+```
+
+**Key Insight:** Return pair (length, count). Sum counts when lengths equal.
+
+---
+
+## 8. **Maximum Sum Increasing Subsequence**
+
+**Instinct:**  
+Length ki jagah sum maximize karna hai. Same LIS logic, but sum add karo, length nahi.
+
+**Approach:**  
+1. Memo[i] = max sum increasing subsequence ending at i
+2. For each j < i where nums[j] < nums[i]
+3. maxSum = max(maxSum, nums[i] + memo[j])
+
+```java
+class Solution {
+    int[] nums;
+    int n;
+    Integer[] memo;
+    
+    public int maxSumIS(int[] nums) {
+        this.nums = nums;
+        n = nums.length;
+        memo = new Integer[n];
+        
+        int maxSum = 0;
+        for (int i = 0; i < n; i++) {
+            maxSum = Math.max(maxSum, dfs(i));
+        }
+        return maxSum;
+    }
+    
+    private int dfs(int i) {
+        if (memo[i] != null) return memo[i];
+        
+        int max = nums[i];
+        for (int j = 0; j < i; j++) {
+            if (nums[j] < nums[i]) {
+                max = Math.max(max, nums[i] + dfs(j));
+            }
+        }
+        
+        memo[i] = max;
+        return max;
+    }
+}
+```
+
+**Key Insight:** Sum LIS - same structure, different aggregation.
+
+---
+
+## 9. **Count Subsequences of Type (a^i, b^j, c^k)**
+
+**Instinct:**  
+String me subsequences count karni hai of form a...a b...b c...c. Track counts of a, ab, abc.
+
+**Approach:**  
+1. Memo[i][state] = ways from index i with current state
+2. State: 0 = looking for 'a', 1 = looking for 'b', 2 = looking for 'c'
+
+```java
+class Solution {
+    int MOD = 1_000_000_007;
+    String s;
+    int[][] memo;
+    
+    public int countABCSubsequences(String s) {
+        this.s = s;
+        int n = s.length();
+        memo = new int[n][3];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(memo[i], -1);
+        }
+        return dfs(0, 0);
+    }
+    
+    private int dfs(int i, int state) {
+        if (state == 3) return 1;
+        if (i == s.length()) return 0;
+        if (memo[i][state] != -1) return memo[i][state];
+        
+        long ways = dfs(i + 1, state); // skip
+        
+        char expected = (state == 0) ? 'a' : (state == 1) ? 'b' : 'c';
+        if (s.charAt(i) == expected) {
+            ways += dfs(i + 1, state + 1);
+        }
+        
+        memo[i][state] = (int)(ways % MOD);
+        return memo[i][state];
+    }
+}
+```
+
+**Key Insight:** State machine DP. Each character moves state forward.
+
+---
+
+## 10. **Number of Subsequences with Sum Mod K**
+
+**Instinct:**  
+Subsequences count where sum % k == target. State = (index, remainder).
+
+**Approach:**  
+1. Memo[i][rem] = number of subsequences from i with current remainder rem
+2. take: (rem + nums[i]) % k
+3. skip: same remainder
+
+```java
+class Solution {
+    int MOD = 1_000_000_007;
+    int[] nums;
+    int k;
+    int[][] memo;
+    
+    public int countSubsequencesWithSumMod(int[] nums, int k, int target) {
+        this.nums = nums;
+        this.k = k;
+        int n = nums.length;
+        memo = new int[n][k];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(memo[i], -1);
+        }
+        return dfs(0, 0, target);
+    }
+    
+    private int dfs(int i, int rem, int target) {
+        if (i == nums.length) return rem == target ? 1 : 0;
+        if (memo[i][rem] != -1) return memo[i][rem];
+        
+        int skip = dfs(i + 1, rem, target);
+        int take = dfs(i + 1, (rem + nums[i]) % k, target);
+        
+        memo[i][rem] = (skip + take) % MOD;
+        return memo[i][rem];
+    }
+}
+```
+
+**Key Insight:** Modulo arithmetic in state. Track remainder instead of actual sum.
+
+---
+
+## 11. **Longest Arithmetic Subsequence (Leetcode 1027)**
+
+**Instinct:**  
+Array me longest arithmetic subsequence (difference constant). Har index ke liye, difference track karo.
+
+**Approach:**  
+1. Memo[i][diff] = max length ending at i with given diff
+2. For each j < i, diff = nums[i] - nums[j]
+3. length = memo[j][diff] + 1
+
+```java
+class Solution {
+    int[] nums;
+    int n;
+    Map<Integer, Integer>[] memo;
+    
+    public int longestArithSeqLength(int[] nums) {
+        this.nums = nums;
+        n = nums.length;
+        memo = new Map[n];
+        for (int i = 0; i < n; i++) {
+            memo[i] = new HashMap<>();
+        }
+        
+        int maxLen = 1;
+        for (int i = 0; i < n; i++) {
+            maxLen = Math.max(maxLen, dfs(i));
+        }
+        return maxLen;
+    }
+    
+    private int dfs(int i) {
+        int max = 1;
+        for (int j = 0; j < i; j++) {
+            int diff = nums[i] - nums[j];
+            int len = memo[j].getOrDefault(diff, 1) + 1;
+            memo[i].put(diff, Math.max(memo[i].getOrDefault(diff, 1), len));
+            max = Math.max(max, len);
+        }
+        return max;
+    }
+}
+```
+
+**Key Insight:** Diff based DP. Use Map for diff → length.
+
+---
+
+## 12. **Longest Arithmetic Subsequence of Given Difference (Leetcode 1218)**
+
+**Instinct:**  
+Difference fixed hai. Longest subsequence with that exact difference. Simple DP: dp[num] = 1 + dp[num - diff].
+
+**Approach:**  
+1. Map to store longest length ending at each value
+2. For each num, length = map.getOrDefault(num - diff, 0) + 1
+
+```java
+class Solution {
+    public int longestSubsequence(int[] arr, int difference) {
+        Map<Integer, Integer> dp = new HashMap<>();
+        int maxLen = 0;
+        
+        for (int num : arr) {
+            int len = dp.getOrDefault(num - difference, 0) + 1;
+            dp.put(num, len);
+            maxLen = Math.max(maxLen, len);
+        }
+        return maxLen;
+    }
+}
+```
+
+**Key Insight:** Fixed difference = simple map DP. O(n) time.
+
+---
+
+## 13. **Number of Subsequences with Product Less Than K**
+
+**Instinct:**  
+Subsequences count where product < k. Since product can be large, use log or track product directly with pruning.
+
+**Approach:**  
+1. Memo[i][product] = count from i with current product
+2. If product >= k, stop (pruning)
+
+```java
+class Solution {
+    int[] nums;
+    int k;
+    Integer[][] memo;
+    
+    public int numSubsequenceProductLessThanK(int[] nums, int k) {
+        this.nums = nums;
+        this.k = k;
+        int n = nums.length;
+        memo = new Integer[n][k + 1];
+        return dfs(0, 1) - 1; // subtract empty subsequence
+    }
+    
+    private int dfs(int i, int product) {
+        if (i == nums.length) return 1;
+        if (product >= k) return 0;
+        if (memo[i][product] != null) return memo[i][product];
+        
+        int skip = dfs(i + 1, product);
+        int take = 0;
+        if (product * nums[i] < k) {
+            take = dfs(i + 1, product * nums[i]);
+        }
+        
+        memo[i][product] = skip + take;
+        return memo[i][product];
+    }
+}
+```
+
+**Key Insight:** Product constraint - prune when product >= k.
+
+---
+
+## 14. **Count Different Palindromic Subsequences (Leetcode 730)**
+
+**Instinct:**  
+Distinct palindromic subsequences count. Use inclusion-exclusion with next/prev pointers.
+
+**Approach:**  
+1. Memo[i][j] = count of distinct palindromes in s[i..j]
+2. If s[i] == s[j], find next and prev same char
+3. Use formula to avoid duplicates
+
+```java
+class Solution {
+    int MOD = 1_000_000_007;
+    String s;
+    int[][] memo;
+    
+    public int countPalindromicSubsequences(String s) {
+        this.s = s;
+        int n = s.length();
+        memo = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(memo[i], -1);
+        }
+        return dfs(0, n - 1);
+    }
+    
+    private int dfs(int i, int j) {
+        if (i > j) return 0;
+        if (i == j) return 1;
+        if (memo[i][j] != -1) return memo[i][j];
+        
+        long res = 0;
+        if (s.charAt(i) == s.charAt(j)) {
+            int left = i + 1, right = j - 1;
+            while (left <= right && s.charAt(left) != s.charAt(i)) left++;
+            while (left <= right && s.charAt(right) != s.charAt(i)) right--;
+            
+            if (left > right) {
+                res = 2 * dfs(i + 1, j - 1) + 2;
+            } else if (left == right) {
+                res = 2 * dfs(i + 1, j - 1) + 1;
+            } else {
+                res = 2 * dfs(i + 1, j - 1) - dfs(left + 1, right - 1);
+            }
+        } else {
+            res = dfs(i + 1, j) + dfs(i, j - 1) - dfs(i + 1, j - 1);
+        }
+        
+        memo[i][j] = (int)((res + MOD) % MOD);
+        return memo[i][j];
+    }
+}
+```
+
+**Key Insight:** Use next/prev same char to avoid double counting.
+
+---
+
+## 15. **Number of Subsequences with XOR K**
+
+**Instinct:**  
+Subsequences count where XOR of elements equals K. State = (index, xor).
+
+**Approach:**  
+1. Memo[i][xor] = count from i with current xor value
+2. take: xor ^ nums[i]
+3. skip: same xor
+
+```java
+class Solution {
+    int MOD = 1_000_000_007;
+    int[] nums;
+    int k;
+    int[][] memo;
+    
+    public int countSubsequencesWithXOR(int[] nums, int k) {
+        this.nums = nums;
+        this.k = k;
+        int n = nums.length;
+        memo = new int[n][1024]; // assuming max XOR value < 1024
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(memo[i], -1);
+        }
+        return dfs(0, 0);
+    }
+    
+    private int dfs(int i, int xor) {
+        if (i == nums.length) return xor == k ? 1 : 0;
+        if (memo[i][xor] != -1) return memo[i][xor];
+        
+        int skip = dfs(i + 1, xor);
+        int take = dfs(i + 1, xor ^ nums[i]);
+        
+        memo[i][xor] = (skip + take) % MOD;
+        return memo[i][xor];
+    }
+}
+```
+
+**Key Insight:** XOR operation in state. Track current XOR value.
+
+---
+
+## 16. **Maximum Length of Pair Chain (Leetcode 646)**
+
+**Instinct:**  
+Pairs (a,b) chain where b < c of next pair. Sort by first element, then LIS on second.
+
+**Approach:**  
+1. Sort pairs by first element
+2. Memo[i][prev] = max chain length from i with previous index prev
+
+```java
+class Solution {
+    int[][] pairs;
+    int n;
+    Integer[][] memo;
+    
+    public int findLongestChain(int[][] pairs) {
+        this.pairs = pairs;
+        n = pairs.length;
+        Arrays.sort(pairs, (a, b) -> a[0] - b[0]);
+        memo = new Integer[n][n + 1];
+        return dfs(0, -1);
+    }
+    
+    private int dfs(int i, int prev) {
+        if (i == n) return 0;
+        int prevIdx = prev + 1;
+        if (memo[i][prevIdx] != null) return memo[i][prevIdx];
+        
+        int skip = dfs(i + 1, prev);
+        int take = 0;
+        if (prev == -1 || pairs[i][0] > pairs[prev][1]) {
+            take = 1 + dfs(i + 1, i);
+        }
+        
+        memo[i][prevIdx] = Math.max(skip, take);
+        return memo[i][prevIdx];
+    }
+}
+```
+
+**Key Insight:** Interval scheduling LIS. Condition on second element.
+
+---
+
+## 17. **Number of Subsequences with OR K**
+
+**Instinct:**  
+Subsequences count where OR of elements equals K. State = (index, or). OR only increases.
+
+**Approach:**  
+1. Memo[i][or] = count from i with current OR value
+2. take: or | nums[i]
+3. skip: same OR
+
+```java
+class Solution {
+    int MOD = 1_000_000_007;
+    int[] nums;
+    int k;
+    int[][] memo;
+    
+    public int countSubsequencesWithOR(int[] nums, int k) {
+        this.nums = nums;
+        this.k = k;
+        int n = nums.length;
+        memo = new int[n][k + 1];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(memo[i], -1);
+        }
+        return dfs(0, 0);
+    }
+    
+    private int dfs(int i, int or) {
+        if (i == nums.length) return or == k ? 1 : 0;
+        if (or > k) return 0; // OR can't decrease, so prune
+        if (memo[i][or] != -1) return memo[i][or];
+        
+        int skip = dfs(i + 1, or);
+        int take = dfs(i + 1, or | nums[i]);
+        
+        memo[i][or] = (skip + take) % MOD;
+        return memo[i][or];
+    }
+}
+```
+
+**Key Insight:** OR only increases. Prune when OR exceeds K.
+
+---
+
+## 18. **Longest String Chain (Leetcode 1048)**
+
+**Instinct:**  
+Strings ki chain where next string = previous + 1 character. Sort by length, then LIS with predecessor check.
+
+**Approach:**  
+1. Sort by length
+2. Memo[i][prev] = max chain length
+3. Check if prev is predecessor of current
+
+```java
+class Solution {
+    String[] words;
+    int n;
+    Integer[][] memo;
+    
+    public int longestStrChain(String[] words) {
+        this.words = words;
+        n = words.length;
+        Arrays.sort(words, (a, b) -> a.length() - b.length());
+        memo = new Integer[n][n + 1];
+        return dfs(0, -1);
+    }
+    
+    private int dfs(int i, int prev) {
+        if (i == n) return 0;
+        int prevIdx = prev + 1;
+        if (memo[i][prevIdx] != null) return memo[i][prevIdx];
+        
+        int skip = dfs(i + 1, prev);
+        int take = 0;
+        if (prev == -1 || isPredecessor(words[prev], words[i])) {
+            take = 1 + dfs(i + 1, i);
+        }
+        
+        memo[i][prevIdx] = Math.max(skip, take);
+        return memo[i][prevIdx];
+    }
+    
+    private boolean isPredecessor(String a, String b) {
+        if (b.length() != a.length() + 1) return false;
+        int i = 0, j = 0;
+        while (i < a.length() && j < b.length()) {
+            if (a.charAt(i) == b.charAt(j)) i++;
+            j++;
+        }
+        return i == a.length();
+    }
+}
+```
+
+**Key Insight:** Sort by length. Predecessor check removes exactly one character.
+
+---
+
+## 19. **Number of Subsequences of String A that Form String B**
+
+**Instinct:**  
+String A ke kitne subsequences exactly string B ke equal hain. Classic subsequence matching DP.
+
+**Approach:**  
+1. Memo[i][j] = ways to form B[j..] from A[i..]
+2. If j == B.length() → 1
+3. If i == A.length() → 0
+4. If A[i] == B[j] → take + skip
+5. Else → skip
+
+```java
+class Solution {
+    String A, B;
+    int[][] memo;
+    int MOD = 1_000_000_007;
+    
+    public int numSubsequences(String A, String B) {
+        this.A = A;
+        this.B = B;
+        int n = A.length(), m = B.length();
+        memo = new int[n][m];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(memo[i], -1);
+        }
+        return dfs(0, 0);
+    }
+    
+    private int dfs(int i, int j) {
+        if (j == B.length()) return 1;
+        if (i == A.length()) return 0;
+        if (memo[i][j] != -1) return memo[i][j];
+        
+        int ways = dfs(i + 1, j); // skip
+        
+        if (A.charAt(i) == B.charAt(j)) {
+            ways = (ways + dfs(i + 1, j + 1)) % MOD; // take
+        }
+        
+        memo[i][j] = ways;
+        return ways;
+    }
+}
+```
+
+**Key Insight:** String matching subsequence count. Take only when chars match.
+
+---
+
+## 20. **Maximum Number of Ways to Partition Array into Subsequences**
+
+**Instinct:**  
+Array ko subsequences me partition karna hai with constraints. State = (index, last element of each subsequence).
+
+**Approach:**  
+1. Memo[i][last1][last2]... but too many states
+2. Better: Greedy with map tracking last elements
+
+```java
+class Solution {
+    public int maxNumOfSubsequences(int[] nums, int k) {
+        // Greedy: put each number in a subsequence where it fits
+        Map<Integer, Integer> last = new HashMap<>();
+        int count = 0;
+        
+        for (int num : nums) {
+            boolean placed = false;
+            for (int prev = num - k; prev <= num + k; prev++) {
+                if (last.containsKey(prev)) {
+                    int freq = last.get(prev);
+                    if (freq == 1) {
+                        last.remove(prev);
+                    } else {
+                        last.put(prev, freq - 1);
+                    }
+                    last.put(num, last.getOrDefault(num, 0) + 1);
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                last.put(num, last.getOrDefault(num, 0) + 1);
+                count++;
+            }
+        }
+        return count;
+    }
+}
+```
+
+**Key Insight:** Greedy assignment to existing subsequences when possible.
+
+---
+
+# 📊 Complete Subsequence DP Summary Table
+
+| # | Problem | Variant | Time | Key Insight |
+|---|---------|---------|------|-------------|
+| 1 | Subset Sum | Existence | O(n²) | Take or skip |
+| 2 | Count Subsets with Sum | Count | O(n²) | Sum of take + skip |
+| 3 | Target Sum | +/- operators | O(n²) | Convert to subset sum |
+| 4 | Min Subset Sum Difference | Min diff | O(n²) | Closest to sum/2 |
+| 5 | Largest Divisible Subset | Divisibility | O(n²) | Sort + DP |
+| 6 | Longest Increasing Subsequence | LIS | O(n²) | Pick/skip with prev |
+| 7 | Number of LIS | Count LIS | O(n²) | Pair (len, count) |
+| 8 | Maximum Sum IS | Sum LIS | O(n²) | Sum instead of length |
+| 9 | Count a^i b^j c^k | State machine | O(n) | State tracking |
+| 10 | Subsequences with Sum Mod K | Modulo | O(nk) | Track remainder |
+| 11 | Longest Arithmetic Subsequence | Diff based | O(n²) | Map for diff |
+| 12 | Longest Arithmetic with Given Diff | Fixed diff | O(n) | Map for value |
+| 13 | Subsequence Product < K | Product | O(nk) | Prune when >= k |
+| 14 | Count Distinct Palindromic Subseq | Distinct | O(n²) | Inclusion-exclusion |
+| 15 | Subsequences with XOR K | XOR | O(n × maxXOR) | Track XOR value |
+| 16 | Maximum Length of Pair Chain | Intervals | O(n²) | Sort + LIS |
+| 17 | Subsequences with OR K | OR | O(nk) | OR only increases |
+| 18 | Longest String Chain | Strings | O(n²L) | Predecessor check |
+| 19 | Subsequences of A forming B | String match | O(n²) | Take/skip on chars |
+| 20 | Partition into Subsequences | Greedy | O(n²) | Greedy assignment |
+
+---
+
+## 🎯 Key Takeaways for Subsequence DP Pattern
+
+### 1. **Core Structure for Subsequence DP:**
+```java
+dfs(i, ...) {
+    if (i == n) return base;
+    skip = dfs(i+1, ...);
+    take = dfs(i+1, ... with nums[i]);
+    return combine(skip, take);
+}
+```
+
+### 2. **Common State Patterns:**
+
+| Operation | State |
+|-----------|-------|
+| Sum | (i, target) |
+| XOR | (i, xor) |
+| OR | (i, or) |
+| Product | (i, product) |
+| Mod | (i, remainder) |
+| LIS | (i, prev) |
+| String match | (i, j) |
+
+### 3. **When to use Subsequence DP:**
+- Need to pick/non-pick elements in order
+- Order matters (can't reorder)
+- Need to track some aggregate (sum, xor, product)
+- Classic pick/skip pattern fits
+
+### 4. **Optimization Techniques:**
+- **Pruning**: Skip when target < 0 or product >= k
+- **Memoization**: Cache (i, state) pairs
+- **Map for diff**: For arithmetic subsequences
+- **Bitmask for small n**: For subset enumeration
+
+### 5. **Common Subsequence Aggregations:**
+
+```
+                    Subsequence DP
+                         │
+        ┌───────────────┼───────────────┐
+        │               │               │
+    Sum/XOR/OR       LIS Variants      String Match
+        │               │               │
+    ┌───┼───┐       ┌───┼───┐       ┌───┼───┐
+    │   │   │       │   │   │       │   │   │
+  Subset  Count   Classic Count   Distinct  Chain
+  Target  Modulo   Sum    Diff     Palindromes
+```
+
+---
+
+## 📝 Key Formulas to Remember
+
+| Operation | Formula |
+|-----------|---------|
+| Subset Sum Exists | `dp[i][t] = dp[i+1][t] OR dp[i+1][t-nums[i]]` |
+| Count Subsets | `dp[i][t] = dp[i+1][t] + dp[i+1][t-nums[i]]` |
+| LIS Length | `dp[i] = 1 + max(dp[j]) for j < i and nums[j] < nums[i]` |
+| LIS Count | `count[i] = sum(count[j]) for j with max length` |
+| Target Sum | `P = (target + sum)/2, then subset sum count` |
+| XOR | `dp[i][x] = dp[i+1][x] + dp[i+1][x^nums[i]]` |
+
+---
+
+Ye **20 Subsequence DP problems** cover karte hain almost sab kuch jo SDE interviews me aata hai. Practice karo aur instinct develop karo ki **kaunsa aggregate track karna hai - sum, XOR, OR, product, ya length**!
